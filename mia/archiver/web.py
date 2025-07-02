@@ -17,6 +17,30 @@ class WebArchiver:
         self.output_dir = "./snapshots/"
         self._init_driver()
 
+    def _request(self, url: str):
+        s = requests.Session()
+        s.headers.update({
+            "User-Agent": self.d.execute_script(
+                "return navigator.userAgent;"
+            )
+        })
+        for cookie in self.d.get_cookies():
+            s.cookies.set(cookie['name'], cookie['value'], domain=cookie['domain'])
+        try:
+            data = requests.get(
+                url,
+                headers = {
+                    "User-Agent": self.d.execute_script(
+                        "return navigator.userAgent;"
+                    )
+                },
+            )
+
+            return data
+        except:
+            return None
+
+
     def _init_driver(self):
         options = Options()
         options.enable_downloads = False
@@ -41,18 +65,11 @@ class WebArchiver:
         for tag in soup.select(selector):
             link = tag.attrs.get(attr)
             if link is not None and link != "":
-                try:
-                    self.d.get(link)
-                except Exception as e:
-                    # DNS-level block, possibly maybe ublock interfering
-                    # We just ignore  this, because it'll happen, a lot
-
-                    # TODO: logger.error()
-                    print(e)
+                data = self._request(link)
+                if data is None or data.status_code >= 400:
                     continue
-
                 with store.open(link, "w") as f:
-                    f.write(self.d.page_source)
+                    f.write(data.text)
             else:
                 # TODO: log error
                 pass
@@ -62,23 +79,10 @@ class WebArchiver:
             link = tag.attrs.get("src")
             print(link)
             if link is not None and link != "":
+                data = self._request(link)
+                if data is None or data.status_code >= 400:
+                    continue
                 with store.open(link, "wb") as f:
-                    s = requests.Session()
-                    s.headers.update({
-                        "User-Agent": self.d.execute_script(
-                            "return navigator.userAgent;"
-                        )
-                    })
-                    for cookie in self.d.get_cookies():
-                        s.cookies.set(cookie['name'], cookie['value'], domain=cookie['domain'])
-                    data = requests.get(
-                        link,
-                        headers = {
-                            "User-Agent": self.d.execute_script(
-                                "return navigator.userAgent;"
-                            )
-                        },
-                    )
                     f.write(data.content)
 
     def _archive_scripts(self, soup, store):

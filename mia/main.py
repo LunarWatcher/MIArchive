@@ -1,5 +1,4 @@
 import argparse
-from sys import argv
 from mia.web import start as start_server
 from mia.cli.archive import archive as archive_cli
 
