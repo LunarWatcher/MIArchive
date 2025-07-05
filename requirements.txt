@@ -1,7 +1,12 @@
+# The shit I do for archival {{{
 undetected-geckodriver-lw
+selenium-wire-lw[uf]
+# }}}
+
 beautifulsoup4==4.13.3
 psycopg==3.2.9
+
 aiohttp==3.12.13
 aiohttp-jinja2==1.6
 aiohttp_cors==0.8.1
-filetype==1.2.0
+brotli>=1.1.0

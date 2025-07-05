@@ -68,7 +68,8 @@ async def get_archived_page(request):
                 return res
 
     context = {
-        "APICall": f"/web/{timestamp}/{url}"
+        "APICall": f"/web/{timestamp}/{url}",
+        "timestamp": timestamp,
     }
     response = ajp.render_template("web/page_wrapper.jinja2", request, context)
     return response

@@ -7,7 +7,8 @@ class M001_Initial(Migration):
         CREATE TABLE mia.ArchiveEntries (
             Timestamp TEXT NOT NULL,
             Url TEXT NOT NULL,
-            Type TEXT NOT NULL,
+            MimeType TEXT NOT NULL,
+            HttpCode INTEGER NOT NULL,
             PRIMARY KEY(Timestamp, Url)
         );
         CREATE INDEX timestamp_listing ON mia.ArchiveEntries (

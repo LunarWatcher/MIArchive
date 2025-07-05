@@ -1,4 +1,5 @@
 snapshots/
+/mitm-certs/
 
 # Extensions
 *.xpi

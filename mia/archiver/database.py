@@ -38,8 +38,6 @@ class ArchiveDB:
                     for migration in migrations:
                         migration.up()
 
-    
-
     def sanitise(self, a: str):
         # Per https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING-KEYWORD-VALUE
         return (a

@@ -24,6 +24,7 @@ class Storage:
             self.target_directory,
             self.sanitise(url)
         )
+
     def open(self, url: str, f):
         return open(self.get_target_path(url), f)
 
