@@ -48,31 +48,24 @@ async def get_archived_page(request):
     if not os.path.exists(expected_url):
         return web.Response(text="Not found", status = 404)
 
-    if request.headers["Sec-Fetch-Dest"] != "document":
-        # TODO: I probably want to store the mimetypes returned when yoinking
-        # the pages so I don't need to do this shit 
-        ft = filetype.guess(expected_url)
-        if ft == None:
-            with open(expected_url, "r") as f:
-                print(expected_url)
-                res = web.Response(
-                    text = f.read(),
-                    content_type=get_content_type(raw_url)
-                )
-                return res
-        else:
-            with open(expected_url, "rb") as f:
-                res = web.Response(
-                    body = f.read()
-                )
-                return res
+    # TODO: I probably want to store the mimetypes returned when yoinking
+    # the pages so I don't need to do this shit 
+    ft = filetype.guess(expected_url)
+    if ft == None:
+        with open(expected_url, "r") as f:
+            print(expected_url)
+            res = web.Response(
+                text = f.read(),
+                content_type=get_content_type(raw_url)
+            )
+            return res
+    else:
+        with open(expected_url, "rb") as f:
+            res = web.Response(
+                body = f.read()
+            )
+            return res
 
-    context = {
-        "APICall": f"/web/{timestamp}/{url}",
-        "timestamp": timestamp,
-    }
-    response = ajp.render_template("web/page_wrapper.jinja2", request, context)
-    return response
 
 def start(args):
     app = web.Application(middlewares = [

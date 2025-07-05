@@ -171,6 +171,9 @@ class WebArchiver:
         #     retry_request()
         # ```
 
+        # Allow for a few seconds for JS to process before processing the URLs
+        sleep(5)
+
         with Storage(self.output_dir, "web") as store:
             for request in self.d.requests:
                 # TODO: This does not work reliably due to rewrites from
@@ -200,11 +203,19 @@ class WebArchiver:
                             request.response.body,
                             request.response.headers.get("Content-Encoding")
                         )
-
-                        processing_method(
-                            request.url,
-                            body,
-                            store
-                        )
+                        try:
+                            processing_method(
+                                request.url,
+                                body,
+                                store
+                            )
+                        except OSError as e:
+                            # 36 is filename too long
+                            if e.errno == 36:
+                                # TODO: figure out if there's a way to avoid
+                                # long filenames in the first place
+                                print("Failed to archive {}: body too long".format(request.url))
+                            else:
+                                raise
 
 

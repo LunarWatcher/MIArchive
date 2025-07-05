@@ -10,7 +10,6 @@ async def security_headers(
 ) -> web.StreamResponse:
     res = await handler(request)
     res.headers.merge({
-        "X-Frame-Options": "DENY",
         # "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "X-XSS-Protection": "0",
@@ -20,12 +19,13 @@ async def security_headers(
         # The CSP on these pages needs to be more lax
         res.headers.add(
             "Content-Security-Policy",
-            "default-src 'self'; "
+            "default-src 'self' blob: localhost:8080; "
             "img-src 'self' blob:; "
             "style-src 'self' 'unsafe-inline' blob:; "
             "frame-ancestors 'self'; "
             "frame-src 'self' blob:; "
             "script-src 'self' 'unsafe-inline' blob:; "
+            "sandbox allow-scripts"
         )
     else:
         res.headers.add(
@@ -36,6 +36,9 @@ async def security_headers(
             "frame-ancestors 'none'; "
             "frame-src 'self' blob:; "
         )
+        res.headers.merge({
+            "X-Frame-Options": "DENY",
+        })
     return res
 
 
