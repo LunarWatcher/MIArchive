@@ -6,10 +6,9 @@ on:
       - master
 
 jobs:
-  unit_tests:
+  tests:
     runs-on: ubuntu-latest
     steps:
-      - run: printenv
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
