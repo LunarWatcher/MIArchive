@@ -25,6 +25,8 @@ dependencies = [
     "aiohttp_cors==0.8.1",
 
     "loguru>=0.7.3",
+
+    "requests",
 ]
 readme = "README.md"
 
