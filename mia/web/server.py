@@ -1,8 +1,11 @@
 import os
 from aiohttp import web
 import aiohttp_jinja2 as ajp
+import aiohttp_cors as aiocors
 import jinja2
 import filetype
+from loguru import logger
+from requests import Response
 
 from .middlewares import security_headers
 
@@ -13,7 +16,6 @@ SNAPSHOT_DIR = "./snapshots/"
 
 def get_content_type(url: str):
     ext = url.rsplit(".", maxsplit=1)[-1]
-    print(ext)
     if ext == "js" or ext == "mjs":
         return "text/javascript"
     elif ext == "css":
@@ -26,6 +28,11 @@ def get_content_type(url: str):
 @routes.get('/')
 async def hello(request):
     return web.Response(text="Hello, world")
+
+@routes.post("/api/debug/csp-reports")
+async def report_csp_errors(request: web.Request):
+    logger.debug("{}".format(await request.text()))
+    return web.Response()
 
 @routes.get("/web/{timestamp}/{url:.*}")
 async def get_archived_page(request):
@@ -46,14 +53,17 @@ async def get_archived_page(request):
     )
 
     if not os.path.exists(expected_url):
-        return web.Response(text="Not found", status = 404)
+        logger.debug("Tried to request {}", expected_url)
+        return web.Response(
+            text="\"Not found\"", status = 404,
+            content_type="text/plain",
+        )
 
     # TODO: I probably want to store the mimetypes returned when yoinking
     # the pages so I don't need to do this shit 
     ft = filetype.guess(expected_url)
     if ft == None:
         with open(expected_url, "r") as f:
-            print(expected_url)
             res = web.Response(
                 text = f.read(),
                 content_type=get_content_type(raw_url)
@@ -66,13 +76,24 @@ async def get_archived_page(request):
             )
             return res
 
+@routes.get("/noscript/web/{timestamp}/{url:.*}")
+async def get_extra_sandboxed_archived_page(request):
+    return await get_archived_page(request)
+
 
 def start(args):
+    if args.debug:
+        logger.level("DEBUG")
+        logger.warning("You're running MIA in debug mode.")
+
     app = web.Application(middlewares = [
         security_headers
     ])
     app.add_routes(routes)
     ajp.setup(app,
         loader=jinja2.FileSystemLoader('./www'))
+
+    cors = aiocors.setup(app)
+
     web.run_app(app)
 

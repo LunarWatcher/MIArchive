@@ -10,22 +10,39 @@ async def security_headers(
 ) -> web.StreamResponse:
     res = await handler(request)
     res.headers.merge({
-        # "X-Content-Type-Options": "nosniff",
+        "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "X-XSS-Protection": "0",
     })
 
-    if (request.url.path.startswith("/web/")):
+    if (request.url.path.startswith("/web/") or
+            request.url.path.startswith("/noscript/web/")):
         # The CSP on these pages needs to be more lax
+        if "html" not in res.headers.get("Content-Type", ""):
+            return res
+        csp = """
+        default-src 'self' 'unsafe-inline' blob:;
+        img-src 'self' blob:;
+        style-src 'self' 'unsafe-inline' blob:;
+        frame-ancestors 'self';
+        frame-src 'self' blob:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; """
+
+        # Only enabled for debug purposes
+        if True:
+            csp += "report-uri http://localhost:8080/api/debug/csp-reports; "
+
+        if request.url.path.startswith("/web/"):
+            csp += "sandbox allow-scripts; "
+        else:
+            csp += "sandbox; "
+
         res.headers.add(
+            # "Content-Security-Policy-Report-Only",
             "Content-Security-Policy",
-            "default-src 'self' blob: localhost:8080; "
-            "img-src 'self' blob:; "
-            "style-src 'self' 'unsafe-inline' blob:; "
-            "frame-ancestors 'self'; "
-            "frame-src 'self' blob:; "
-            "script-src 'self' 'unsafe-inline' blob:; "
-            "sandbox allow-scripts"
+            # Required to prevent aiohttp from complaining about header
+            # injection
+            csp.replace("\n", "")
         )
     else:
         res.headers.add(
@@ -37,7 +54,7 @@ async def security_headers(
             "frame-src 'self' blob:; "
         )
         res.headers.merge({
-            "X-Frame-Options": "DENY",
+            "X-Frame-Options": "DENY"
         })
     return res
 

@@ -8,8 +8,12 @@ class ArchiveRecord:
 
     type: str = "web"
 
+class DBConf:
+    upgrade: bool = True
+
 class ArchiveDB:
-    def __init__(self, dbname: str, dbhost: str, dbuser: str, dbpassword: str):
+    def __init__(self, dbname: str, dbhost: str, dbuser: str, dbpassword: str,
+                 conf: DBConf):
         dbname = self.sanitise(dbname)
         dbhost = self.sanitise(dbhost)
         dbuser = self.sanitise(dbuser)
@@ -35,11 +39,21 @@ class ArchiveDB:
                 )
                 version: int = 0 if len(curr_version) == 0 else curr_version[0][0]
                 if version != len(migrations):
-                    for migration in migrations:
-                        migration.up()
+                    if conf.upgrade:
+                        for migration in migrations:
+                            migration.up()
+                    else:
+                        raise RuntimeError(
+                            "You appear to be running a new CLI instance "
+                            "without updating your server instance. "
+                            "Please restart your server and try again"
+                        )
 
     def sanitise(self, a: str):
         # Per https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING-KEYWORD-VALUE
+        # I think this won't be quite sufficient, but if anyone has a password
+        # with not just single quotes, but backslashes immediately preceeding a
+        # single quote, they're  bringing it on themselves.
         return (a
             .replace('\\', '\\\\')
             .replace("'", "\\'")
