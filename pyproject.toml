@@ -14,21 +14,28 @@ dynamic = ["version"]
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
+    # Archival
     "undetected-geckodriver-lw",
     "selenium-wire-lw[uf]",
 
+    # Misc. processing
     "beautifulsoup4==4.13.3",
+
+    # Data storage
     "psycopg==3.2.9",
 
+    # Server
     "aiohttp==3.12.13",
     "aiohttp-jinja2==1.6",
     "aiohttp_cors==0.8.1",
 
+    # Logging
     "loguru>=0.7.3",
 
+    # Misc utilities
     "requests",
 ]
-readme = "README.md"
+readme = "README-pypi.md"
 
 authors = [
     { name = "LunarWatcher", email = "oliviawolfie@pm.me" },
@@ -62,6 +69,9 @@ keywords = [
     "archival", "web archiving", "internet archiving", "web", "browser", "download",
     "preservation", 
 ]
+
+[project.scripts]
+mia = "miarchive:main"
 
 [project.urls]
 Homepage = "https://codeberg.org/LunarWatcher/MIArchive"
