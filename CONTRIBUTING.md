@@ -25,4 +25,10 @@ TBA
 
 TBA
 
+## Creating issues and pull requests
+
+For bug reports, questions, feature requests, or similar, use [Codeberg](https://codeberg.org/LunarWatcher/MIArchive/issues). 
+
+For pull requests, you can open them on either GitHub or Codeberg, but using Codeberg is strongly encouraged. Although all the workflows run on GitHub to avoid throwing traffic at Codeberg's limited CI servers, these running is not a requirement, as I'll usually be doing manual testing anyway. This is not a huge project, and nothing is automatically released without a tag, so the tests running automagically before merging isn't a huge deal.
+
 [^1]: Full collection permalink: https://doi.org/10.21428/e4baedd9.9070dfe7 - each entry does not seem to have its own DOI, to my great personal annoyance

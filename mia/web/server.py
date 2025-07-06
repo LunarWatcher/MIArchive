@@ -26,7 +26,7 @@ def get_content_type(url: str):
 
 @routes.get('/')
 @ajp.template("index.html")
-async def index(request):
+async def index(request: web.Request):
     return {
         "Meta": {
             "Title": "MIArchive",

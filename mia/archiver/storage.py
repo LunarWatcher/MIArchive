@@ -5,8 +5,8 @@ from urllib import parse
 class Storage:
     def __init__(self, snapshot_dir: str,
                  type: str = "web"):
-        timestamp = self._get_timestamp()
-        self.webpath = f"/{type}/{timestamp}"
+        self.timestamp = self._get_timestamp()
+        self.webpath = f"/{type}/{self.timestamp}"
         self.target_directory = f"{snapshot_dir}{self.webpath}"
         pass
 
@@ -17,6 +17,9 @@ class Storage:
             .strftime("%Y%m%d%H%M%S%f"))
 
     def sanitise(self, url: str):
+        # This is not optimal, but this is the easiest and safest option.
+        # It will run into hard lenght limit restrictions, but I can live with
+        # that.
         return url.replace("/", "_")
 
     def get_target_path(self, url: str):

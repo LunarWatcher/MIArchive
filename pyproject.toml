@@ -3,21 +3,23 @@ requires = ["setuptools >= 77.0.3", "wheel", "setuptools-git-versioning>=2.0,<3"
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["sedd*"]
+include = ["miarchive*"]
 
 [tool.setuptools-git-versioning]
 enabled = true
 
 [project]
-name = "sedd"
+name = "miarchive"
 dynamic = ["version"]
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
     "undetected-geckodriver-lw",
     "selenium-wire-lw[uf]",
+
     "beautifulsoup4==4.13.3",
     "psycopg==3.2.9",
+
     "aiohttp==3.12.13",
     "aiohttp-jinja2==1.6",
     "aiohttp_cors==0.8.1",
@@ -44,14 +46,13 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: End Users/Desktop",
-    "Intended Audience :: Information Technology",
-    "Intended Audience :: Legal Industry",
     "Intended Audience :: System Administrators",
 
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 
     "Operating System :: POSIX :: Linux",
 ]

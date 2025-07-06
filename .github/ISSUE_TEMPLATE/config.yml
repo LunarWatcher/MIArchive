@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Issue tracker
+    url: https://codeberg.org/LunarWatcher/MIArchive/issues
+    about: Please open bug reports, feature requests, questions, and similar in main repo on Codeberg.
+
