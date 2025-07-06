@@ -5,7 +5,6 @@ import aiohttp_cors as aiocors
 import jinja2
 import filetype
 from loguru import logger
-from requests import Response
 
 from .middlewares import security_headers
 
@@ -26,8 +25,14 @@ def get_content_type(url: str):
     return "text/html"
 
 @routes.get('/')
-async def hello(request):
-    return web.Response(text="Hello, world")
+@ajp.template("index.html")
+async def index(request):
+    return {
+        "Meta": {
+            "Title": "MIArchive",
+            "Description": "A small, self-hostable internet archive",
+        }
+    }
 
 @routes.post("/api/debug/csp-reports")
 async def report_csp_errors(request: web.Request):

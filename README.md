@@ -59,7 +59,17 @@ I apply a similar rationale to Cloudflare. The requests are manually made for so
 
 ## Requirements and setup
 
-TBA
+To set up MIArchive, you need:
+
+* A Linux-based server
+* Python 3.10+
+* Postgresql, not necessarily installed on the same machine
+
+For development setup, see [CONTRIBUTING.md](CONTRIBUTING.md). The README only details how to install MIArchive for production use.
+
+### Automated setup
+
+
 
 [^1]: Yes, this is a pun on Missing In Action and Archival/Archive (Missing In Archive is functionally the canonical full name). Yes, I thought I was funny. Yes, I'm already regretting my decision (mostly, it does at least give nice, shortly typed `mia` commands). Yes, I still think I'm funny several days later, even after needing to fork `selenium-wire-2`.
 [^2]: I'm not saying the others are illegal, but as far as I know, archive.org goes a lot further than many other archives in making sure the content hosted is legal. This unfortunately means archive.org is fairly quick to take down content, which makes it hard to actually preserve the historical record.
