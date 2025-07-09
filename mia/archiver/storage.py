@@ -51,17 +51,11 @@ class Storage:
             .strftime("%Y%m%d%H%M%S%f"))
 
     def sanitise(self, url: str):
-        # This is not optimal, but this is the easiest and safest option.
-        # It will run into hard lenght limit restrictions, but I can live with
-        # that.
-        sanitised = url.replace("/", "_")
         # ext4 has a max filename length of 255 characters
         # A buffer of 5 allows for up to @9999 for disambiguations,
         # since the length including the @ is not considered here
         # Even this is an excessive length buffer.
-        if len(sanitised) > 250:
-            return sanitised[:250]
-        return sanitised
+        return url.replace("/", "_")[:250]
 
     def get_target_path(self, url: str):
         parsed = parse.urlparse(url)
