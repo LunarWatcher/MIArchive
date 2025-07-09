@@ -18,7 +18,7 @@ server = subs.add_parser(
 server.add_argument(
     "--debug,-d",
     help = "Whether or not to enable debug mode, which adds some additional "
-        "default settings not settable in any other way, as some of these are"
+        "default settings not settable in any other way, as some of these are "
         "fundamentally unsafe.",
     required = False,
     action="store_true",

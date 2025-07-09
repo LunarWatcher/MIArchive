@@ -23,6 +23,9 @@ class WebArchiver:
         self.ublock_url = "https://github.com/gorhill/uBlock/releases/download/1.63.0/uBlock0_1.63.0.firefox.signed.xpi"
         # TODO: make configurable
         self.output_dir = "./snapshots/"
+        # TODO: need some way to prevent ublock from polluting the archives
+        # with requests made in the background
+        # Maybe caching a profile could help?
         self.d: sw.UndetectedFirefox | None = None
 
         self.processing_methods = {
@@ -194,6 +197,10 @@ class WebArchiver:
                 print(request.url, "returned", request.response.status_code,
                       "and will be archived.")
 
+                store.commit_metadata(
+                    request
+                )
+
                 if (request.response.status_code < 300):
                         processing_method = self._resolve_target_key(
                             request.response.headers.get_content_type()
@@ -215,7 +222,6 @@ class WebArchiver:
                                 # TODO: figure out if there's a way to avoid
                                 # long filenames in the first place
                                 print("Failed to archive {}: body too long".format(request.url))
+                                continue
                             else:
                                 raise
-
-

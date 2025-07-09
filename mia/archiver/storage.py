@@ -1,6 +1,40 @@
 from datetime import datetime, timezone
 import os
+import json
 from urllib import parse
+
+import seleniumwire.request
+from dataclasses import dataclass
+
+@dataclass
+class Entry:
+    original_url: str
+    # Where the URL redirects to. Only populated if status_code == 3xx
+    redirect_target: str | None
+    filepath: str
+    
+    mime_type: str
+    status_code: int
+
+class ArchivedWebsite:
+    # Contains per-page metadata, referring to the source URL
+    pages: dict[str, Entry]
+
+    # Contains a cache of URLs in the form 
+    # { "base URL": [ "url_1?args1", "url_2?args2" ] }
+    # The index of each entry in the list corresponds to its postfix
+    # This can be used to compute what @notation to give the files.
+    base_urls: dict[str, list[str]]
+
+    def __init__(self):
+        self.pages = {}
+        self.base_urls = {}
+
+    def dictify(self):
+        return {
+            "pages": self.pages
+        }
+
 
 class Storage:
     def __init__(self, snapshot_dir: str,
@@ -8,7 +42,7 @@ class Storage:
         self.timestamp = self._get_timestamp()
         self.webpath = f"/{type}/{self.timestamp}"
         self.target_directory = f"{snapshot_dir}{self.webpath}"
-        pass
+        self.state = ArchivedWebsite()
 
     def _get_timestamp(self):
         # TODO: I don't think I need to handle disambiguation, the number of
@@ -20,16 +54,72 @@ class Storage:
         # This is not optimal, but this is the easiest and safest option.
         # It will run into hard lenght limit restrictions, but I can live with
         # that.
-        return url.replace("/", "_")
+        sanitised = url.replace("/", "_")
+        # ext4 has a max filename length of 255 characters
+        # A buffer of 5 allows for up to @9999 for disambiguations,
+        # since the length including the @ is not considered here
+        # Even this is an excessive length buffer.
+        if len(sanitised) > 250:
+            return sanitised[:250]
+        return sanitised
 
     def get_target_path(self, url: str):
+        parsed = parse.urlparse(url)
+        query = parsed.query
+        parsed = parsed._replace(query = "")
+
+        parsed_url = parse.urlunparse(parsed)
+        if query != "":
+            old_urls = self.state.base_urls.get(
+                parsed_url,
+                []
+            )
+
+            if (url in old_urls
+                and (existing_idx := old_urls.index(url)) >= 0
+            ):
+                return os.path.join(
+                    self.target_directory,
+                    self.sanitise(parsed_url) + f"@{existing_idx}"
+                )
+
+            idx = len(old_urls)
+            old_urls.append(url)
+
+            self.state.base_urls[parsed_url] = old_urls
+            parsed_url += f"@{idx}"
+
         return os.path.join(
             self.target_directory,
-            self.sanitise(url)
+            self.sanitise(parsed_url)
         )
 
     def open(self, url: str, f):
         return open(self.get_target_path(url), f)
+
+    def commit_metadata(
+        self,
+        request: seleniumwire.request.Request
+    ):
+        assert request.response is not None, \
+            "You shouldn't call commit_metadata if you know your request is bad"
+
+        src_url = request.url
+        src_filename = self.get_target_path(src_url)
+        src_mimetype = request.response.headers.get_content_type()
+        src_code = request.response.status_code
+
+        src_redirect = None
+        if src_code >= 300 and src_code < 400:
+            src_redirect = request.response.headers.get("Location")
+
+        self.state.pages[src_url] = Entry(
+            src_url,
+            src_redirect,
+            src_filename,
+            src_mimetype,
+            src_code
+        )
 
     def url_to_archive(self, parent_url: str, url: str):
         if url.startswith("http://") or url.startswith("https://"):
@@ -62,4 +152,14 @@ class Storage:
         return self
 
     def __exit__(self, type, value, traceback):
-        pass
+        if traceback is None:
+            with open(os.path.join(
+                self.target_directory,
+                "index.json"
+            ), "w") as f:
+                json.dump(
+                    self.state.dictify(),
+                    f,
+                    default = lambda v : v.__dict__,
+                    indent = 2,
+                )
