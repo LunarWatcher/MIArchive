@@ -4,10 +4,9 @@ import json
 from urllib import parse
 
 import seleniumwire.request
-from dataclasses import dataclass
+import msgspec
 
-@dataclass
-class Entry:
+class Entry(msgspec.Struct):
     original_url: str
     # Where the URL redirects to. Only populated if status_code == 3xx
     redirect_target: str | None
@@ -16,24 +15,9 @@ class Entry:
     mime_type: str
     status_code: int
 
-class ArchivedWebsite:
+class ArchivedWebsite(msgspec.Struct):
     # Contains per-page metadata, referring to the source URL
     pages: dict[str, Entry]
-
-    # Contains a cache of URLs in the form 
-    # { "base URL": [ "url_1?args1", "url_2?args2" ] }
-    # The index of each entry in the list corresponds to its postfix
-    # This can be used to compute what @notation to give the files.
-    base_urls: dict[str, list[str]]
-
-    def __init__(self):
-        self.pages = {}
-        self.base_urls = {}
-
-    def dictify(self):
-        return {
-            "pages": self.pages
-        }
 
 
 class Storage:
@@ -42,7 +26,13 @@ class Storage:
         self.timestamp = self._get_timestamp()
         self.webpath = f"/{type}/{self.timestamp}"
         self.target_directory = f"{snapshot_dir}{self.webpath}"
-        self.state = ArchivedWebsite()
+        self.state = ArchivedWebsite({})
+
+        # Contains a cache of URLs in the form 
+        # { "base URL": [ "url_1?args1", "url_2?args2" ] }
+        # The index of each entry in the list corresponds to its postfix
+        # This can be used to compute what @notation to give the files.
+        self.base_urls: dict[str, list[str]] = {}
 
     def _get_timestamp(self):
         # TODO: I don't think I need to handle disambiguation, the number of
@@ -64,7 +54,7 @@ class Storage:
 
         parsed_url = parse.urlunparse(parsed)
         if query != "":
-            old_urls = self.state.base_urls.get(
+            old_urls = self.base_urls.get(
                 parsed_url,
                 []
             )
@@ -80,7 +70,7 @@ class Storage:
             idx = len(old_urls)
             old_urls.append(url)
 
-            self.state.base_urls[parsed_url] = old_urls
+            self.base_urls[parsed_url] = old_urls
             parsed_url += f"@{idx}"
 
         return os.path.join(
@@ -116,7 +106,7 @@ class Storage:
         )
 
     def url_to_archive(self, parent_url: str, url: str):
-        if url.startswith("http://") or url.startswith("https://"):
+        if url.startswith(("http://", "https://")):
             # Fully qualified URL
             return f"{self.webpath}/{url}"
         elif url.startswith("javascript:"):
@@ -150,10 +140,8 @@ class Storage:
             with open(os.path.join(
                 self.target_directory,
                 "index.json"
-            ), "w") as f:
-                json.dump(
-                    self.state.dictify(),
-                    f,
-                    default = lambda v : v.__dict__,
-                    indent = 2,
-                )
+            ), "wb") as f:
+                f.write(msgspec.json.encode(
+                    self.state
+                ))
+

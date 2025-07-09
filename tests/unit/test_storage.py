@@ -20,17 +20,17 @@ def test_get_parameter_resolution():
         assert store.get_target_path("https://example.com?abcd=1234") \
             == store.target_directory + "/https:__example.com@0"
 
-        assert "https://example.com" in store.state.base_urls
-        assert len(store.state.base_urls) == 1
-        assert len(store.state.base_urls["https://example.com"]) == 1
+        assert "https://example.com" in store.base_urls
+        assert len(store.base_urls) == 1
+        assert len(store.base_urls["https://example.com"]) == 1
 
 
     for _ in range(0, 10):
         assert store.get_target_path("https://example.com?abcd=12345") \
             == store.target_directory + "/https:__example.com@1"
 
-        assert len(store.state.base_urls) == 1
-        assert len(store.state.base_urls["https://example.com"]) == 2
+        assert len(store.base_urls) == 1
+        assert len(store.base_urls["https://example.com"]) == 2
 
 def test_forced_truncation():
     store = storage.Storage(
