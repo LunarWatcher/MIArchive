@@ -33,6 +33,9 @@ archive = subs.add_parser(
 )
 archive.set_defaults(func = archive_cli)
 
-args = parser.parse_args()
-args.func(args)
+def main():
+    args = parser.parse_args()
+    args.func(args)
 
+if __name__ == "__main__":
+    main()

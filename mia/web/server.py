@@ -4,7 +4,6 @@ from aiohttp import web
 import aiohttp_jinja2 as ajp
 import aiohttp_cors as aiocors
 import jinja2
-import filetype
 from loguru import logger
 import msgspec
 
