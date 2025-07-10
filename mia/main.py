@@ -1,6 +1,7 @@
 import argparse
 from mia.web import start as start_server
 from mia.cli.archive import archive as archive_cli
+from mia.cli.setup import setup_cli
 
 parser = argparse.ArgumentParser(
     prog="mia",
@@ -33,9 +34,12 @@ archive = subs.add_parser(
 )
 archive.set_defaults(func = archive_cli)
 
+setup = subs.add_parser(
+    "setup",
+    help="One-time environment setup of stuff needed to run MIA"
+)
+archive.set_defaults(func = setup_cli)
+
 def main():
     args = parser.parse_args()
     args.func(args)
-
-if __name__ == "__main__":
-    main()

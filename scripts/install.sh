@@ -16,5 +16,5 @@ source env/bin/activate
 pip3 install miarchive
 
 # Set up environment
-miarchive setup
+mia setup
 

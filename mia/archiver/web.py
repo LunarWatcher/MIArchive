@@ -221,7 +221,8 @@ class WebArchiver:
                             if e.errno == 36:
                                 # TODO: figure out if there's a way to avoid
                                 # long filenames in the first place
-                                print("Failed to archive {}: body too long".format(request.url))
+                                print("Failed to archive {}: body too long"
+                                    .format(request.url))
                                 continue
                             else:
                                 raise
