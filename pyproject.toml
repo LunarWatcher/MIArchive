@@ -74,7 +74,7 @@ keywords = [
 ]
 
 [project.scripts]
-mia = "mia:main.main"
+mia = "mia:cli_main.main"
 
 [project.urls]
 Homepage = "https://codeberg.org/LunarWatcher/MIArchive"
