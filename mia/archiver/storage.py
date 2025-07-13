@@ -107,7 +107,7 @@ class Storage:
 
     def url_to_archive(self, parent_url: str, url: str):
         if url.startswith(("http://", "https://")):
-            # Fully qualified URL
+            # Fully qualified URL; use verbatim
             return f"{self.webpath}/{url}"
         elif url.startswith("javascript:"):
             # JS URLs 
@@ -116,6 +116,8 @@ class Storage:
             return url
         elif url.startswith("//"):
             # Relative URL
+            # Techncially, this is not always correct, and will fail for
+            # non-HTTPS sites. 
             return f"{self.webpath}/https://{url}"
 
         base_url = parse.urlparse(parent_url).hostname

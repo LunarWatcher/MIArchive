@@ -17,7 +17,7 @@ server = subs.add_parser(
     help="Server-related commands"
 )
 server.add_argument(
-    "--debug,-d",
+    "-d, --debug",
     help = "Whether or not to enable debug mode, which adds some additional "
         "default settings not settable in any other way, as some of these are "
         "fundamentally unsafe.",
@@ -38,7 +38,17 @@ setup = subs.add_parser(
     "setup",
     help="One-time environment setup of stuff needed to run MIA"
 )
-archive.set_defaults(func = setup_cli)
+setup.add_argument(
+    "-d, --developer",
+    help="Whether or not to also enable development setup features. You "
+        "should only supply this if you plan to develop MIArchive itself, as "
+        "some of the setup commands are required for testing to work",
+    required = False,
+    default = False,
+    action="store_true",
+    dest = "dev_setup"
+)
+setup.set_defaults(func = setup_cli)
 
 def main():
     args = parser.parse_args()

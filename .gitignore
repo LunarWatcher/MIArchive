@@ -1,5 +1,6 @@
 snapshots/
 /mitm-certs/
+/config.json
 
 # Extensions
 *.xpi

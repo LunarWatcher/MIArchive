@@ -18,11 +18,12 @@ from .storage import Storage
 class WebArchiver:
     GENERIC_PROCESSING_METHOD = "__default__"
 
-    def __init__(self):
+    def __init__(self, depth: int = 1):
         # TODO: automate updates
         self.ublock_url = "https://github.com/gorhill/uBlock/releases/download/1.63.0/uBlock0_1.63.0.firefox.signed.xpi"
         # TODO: make configurable
         self.output_dir = "./snapshots/"
+        self.depth = depth
         # TODO: need some way to prevent ublock from polluting the archives
         # with requests made in the background
         # Maybe caching a profile could help?
