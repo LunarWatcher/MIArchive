@@ -1,4 +1,5 @@
 from aiohttp.web import AppKey
+from mia import config
 
 DATABASE = AppKey("database", None)
-SNAPSHOT_DIR = AppKey("snapshot_dir", str)
+CONFIG = AppKey("config", config.Config)

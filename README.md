@@ -64,10 +64,16 @@ To set up MIArchive, you need:
 * A Linux-based server
 * Python 3.10+
 * Postgresql, not necessarily installed on the same machine
+* `xvfb` - this is used to simulate a full display. I don't know if this still works on Wayland with XWayland. You can disable this requirement with the `-h` flag for the `server` and `archive` commands, but you'll then need an actual display connected for this to work.
 
 For development setup, see [CONTRIBUTING.md](CONTRIBUTING.md). The README only details how to install MIArchive for production use.
 
-### Automated setup
+Once you have your dependencies sorted out, you can `curl` this script to deal with the bulk of the MIA-specific installation stuff:
+```bash
+bash <(curl -L https://codeberg.org/LunarWatcher/MIArchive/raw/branch/master/scripts/install.sh)
+```
+
+If you don't wish to `curl` the script, you can read the script and run the commands manually.
 
 ## Features
 

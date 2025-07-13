@@ -159,6 +159,13 @@ def setup_config(dev_setup: bool):
         "likely want to change anyway. This includes the archive directory."
     )
 
+    if dev_setup:
+        logger.info("Creating .env.dev...")
+        with open("./.env.dev", "w") as f:
+            f.write("POSTGRES_USER=mia\n")
+            f.write(f"POSTGRES_PASSWORD={cfg.database.password}\n")
+            f.write("POSTGRES_DATABASE=miatest\n")
+
     return cfg
 
 def setup_nginx(cfg: config.Config):
@@ -261,5 +268,12 @@ def setup_cli(args):
     cfg = setup_config(
         args.dev_setup
     )
-    setup_nginx(cfg)
-    setup_systemd()
+
+    if not args.dev_setup:
+        setup_nginx(cfg)
+        setup_systemd()
+    else:
+        logger.info(
+            "Nginx and systemd services are not generated with --developer"
+        )
+

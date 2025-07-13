@@ -9,7 +9,9 @@ Generative AI uses training data [based on plagiarism and piracy](https://web.ar
 
 ### Testing policies
 
-TBA
+Anything that can be tested automatically, should be tested, within reason.
+
+If you write new functionality that can be tested, you should write tests for it. This is not a hard requirement, but tests are a massive help in ensuring stuff doesn't break down the line. 
 
 ### Git practices
 
@@ -17,18 +19,39 @@ No specific Git practices are used.
 
 ### Code style and naming conventions
 
-TBA
+Python code is written in accordance with PEP 8, unless it's convenient not to. This notably applies to text breaking. PEP 8 requires a max line width of 79 characters (72 for docstrings and comments), which is just short enough that a lot of stuff goes past that, especially in precisely strings. 
+
+No style conventions are checked or forced automatically by formatters, largely because I have a bad track record with formatters doing everything except what I want them to do.
 
 ## Development setup
 
+```
+# You want a venv
+python3 -m venv env
+source ./env/bin/activate
+
+# Then install dev requirements
+pip3 install -r requirements.txt
+
+# Set up local environment development use
+python3 -m mia setup --developer
+```
+
+This creates `config.json`, which is used to actually run the server. This is the same file used in the production setup. Additionally, it creates `.env.dev`, a prerequisite to run the tests, as the config used in the tests are generated on the fly, which means the tests need to know what password to use.
+
 ### Running tests
 
-TBA
+As long as you have your environment set up, running the tests is as simple as
+```
+python3 -m pytest
+```
+
+This will run the entire test suite. To run specific tests or other pytest-related related questions, see pytest's documentation.
 
 ## Creating issues and pull requests
 
 For bug reports, questions, feature requests, or similar, use [Codeberg](https://codeberg.org/LunarWatcher/MIArchive/issues). 
 
-For pull requests, you can open them on either GitHub or Codeberg, but using Codeberg is strongly encouraged. Although all the workflows run on GitHub to avoid throwing traffic at Codeberg's limited CI servers, these running is not a requirement, as I'll usually be doing manual testing anyway. This is not a huge project, and nothing is automatically released without a tag, so the tests running automagically before merging isn't a huge deal.
+For pull requests, you can open them on either GitHub or Codeberg, but using Codeberg is strongly encouraged. Although all the workflows run on GitHub to avoid throwing traffic at Codeberg's limited CI servers, these running is not a requirement, as I'll usually be doing manual testing anyway. This is not a huge project, and nothing is automatically released without a tag, so the tests not running automagically before merging isn't a huge deal.
 
 [^1]: Full collection permalink: https://doi.org/10.21428/e4baedd9.9070dfe7 - each entry does not seem to have its own DOI, to my great personal annoyance

@@ -14,5 +14,7 @@ loguru>=0.7.3
 
 msgspec>=0.19.0
 
+xvfbwrapper==0.2.13
+
 requests
 pytest

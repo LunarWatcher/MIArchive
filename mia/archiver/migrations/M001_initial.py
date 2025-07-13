@@ -18,6 +18,16 @@ class M001_Initial(Migration):
             Url
         );
         """)
+        cursor.execute("""
+        CREATE TABLE mia.Users (
+            UserID SERIAL PRIMARY KEY,
+            Username TEXT NOT NULL UNIQUE,
+            Password TEXT NOT NULL,
+            Admin BOOLEAN NOT NULL
+        );
+        INSERT INTO mia.Users (Username, Password, Admin)
+        VALUES ('admin', 'admin', true);
+        """)
 
     def down(self, cursor: Cursor):
         cursor.execute("""DROP SCHEMA mia CASACADE;""")

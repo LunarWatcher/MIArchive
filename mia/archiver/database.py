@@ -31,7 +31,7 @@ class ArchiveDB:
                 c.execute("""CREATE TABLE IF NOT EXISTS mia.Migration (
                     Key TEXT PRIMARY KEY,
                     Version INTEGER PRIMARY KEY
-                )""");
+                )""")
 
                 curr_version = (
                     c.execute("SELECT Version FROM mia.Migration WHERE Key = '__mia__'")
