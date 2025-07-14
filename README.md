@@ -77,6 +77,9 @@ If you don't wish to `curl` the script, you can read the script and run the comm
 
 ## Features
 
+* uBlock Origin and undetected-geckodriver by default
+* Two different sandbox modes for archived pages, with and without scripts running in the archived page.
+
 [^1]: Yes, this is a pun on Missing In Action and Archival/Archive (Missing In Archive is functionally the canonical full name). Yes, I thought I was funny. Yes, I'm already regretting my decision (mostly, it does at least give nice, shortly typed `mia` commands). Yes, I still think I'm funny several days later, even after needing to fork `selenium-wire-2`.
 [^2]: I'm not saying the others are illegal, but as far as I know, archive.org goes a lot further than many other archives in making sure the content hosted is legal. This unfortunately means archive.org is fairly quick to take down content, which makes it hard to actually preserve the historical record.
 [^3]: [This list](https://radar.cloudflare.com/bots#verified-bots) is absolute bullshit. It includes OpenAI, Google's slop bot, anthropic, and Meta (Facebook), all of whom have questionable relations to respecting requests not steal data, and questionable relations [to basic copyright law](https://arstechnica.com/tech-policy/2025/02/meta-torrented-over-81-7tb-of-pirated-books-to-train-ai-authors-say/)

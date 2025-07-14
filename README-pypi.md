@@ -9,7 +9,7 @@ For more comprehensive information about MIArchive, see the [full README on Code
 * Linux-based server
 * PostgreSQL
 * Python 3.10+
-
+* xvfb
 
 ## Installation
 
@@ -29,11 +29,13 @@ source env/bin/activate
 pip3 install miarchive
 
 # Set up environment
-miarchive setup
+mia setup
 ```
 Or using an install script featuring the exact same commands:
 ```bash
 bash <(curl -L https://codeberg.org/LunarWatcher/MIArchive/raw/branch/master/scripts/install.sh)
 ```
 
-The bulk of the setup systems are scripted in Python for everyone's convenience.
+The bulk of the setup systems are scripted in Python for everyone's convenience. 
+
+`mia setup` deals with all the setup of the boring stuff, including the database, nginx, a systemd service, and a template for the config. 

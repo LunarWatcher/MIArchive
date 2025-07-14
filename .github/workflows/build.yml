@@ -16,6 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          sudo apt install -y xvfb
       - name: "Run tests"
         run: |
           python3 -m pytest

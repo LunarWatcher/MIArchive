@@ -146,8 +146,10 @@ def setup_config(dev_setup: bool):
     logger.info("Writing config to file...")
     with open("./config.json", "wb") as f:
         f.write(
-            msgspec.json.encode(
-                cfg,
+            msgspec.json.format(
+                msgspec.json.encode(
+                    cfg,
+                )
             )
         )
 

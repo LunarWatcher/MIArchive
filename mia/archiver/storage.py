@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 import os
-import json
 from urllib import parse
 
 import seleniumwire.request
@@ -11,7 +10,7 @@ class Entry(msgspec.Struct):
     # Where the URL redirects to. Only populated if status_code == 3xx
     redirect_target: str | None
     filepath: str
-    
+
     mime_type: str
     status_code: int
 
@@ -28,7 +27,7 @@ class Storage:
         self.target_directory = f"{snapshot_dir}{self.webpath}"
         self.state = ArchivedWebsite({})
 
-        # Contains a cache of URLs in the form 
+        # Contains a cache of URLs in the form
         # { "base URL": [ "url_1?args1", "url_2?args2" ] }
         # The index of each entry in the list corresponds to its postfix
         # This can be used to compute what @notation to give the files.
@@ -36,9 +35,10 @@ class Storage:
 
     def _get_timestamp(self):
         # TODO: I don't think I need to handle disambiguation, the number of
-        # webdrivers is likely just going to be one with a queue 
+        # webdrivers is likely just going to be one with a queue
         return (datetime.now(timezone.utc)
-            .strftime("%Y%m%d%H%M%S%f"))
+            .strftime("%Y%m%d%H%M%S%f")
+        )
 
     def sanitise(self, url: str):
         # ext4 has a max filename length of 255 characters
@@ -50,7 +50,7 @@ class Storage:
     def get_target_path(self, url: str):
         parsed = parse.urlparse(url)
         query = parsed.query
-        parsed = parsed._replace(query = "")
+        parsed = parsed._replace(query="")
 
         parsed_url = parse.urlunparse(parsed)
         if query != "":
@@ -110,14 +110,14 @@ class Storage:
             # Fully qualified URL; use verbatim
             return f"{self.webpath}/{url}"
         elif url.startswith("javascript:"):
-            # JS URLs 
+            # JS URLs
             # Not sure if there are any other edge-cases beyond this and fully
             # qualified URLs where ^[^:]+: is an acceptable check
             return url
         elif url.startswith("//"):
             # Relative URL
             # Techncially, this is not always correct, and will fail for
-            # non-HTTPS sites. 
+            # non-HTTPS sites.
             return f"{self.webpath}/https://{url}"
 
         base_url = parse.urlparse(parent_url).hostname
@@ -129,7 +129,6 @@ class Storage:
             # It's usually relative to the parent URL's "folder" (or whatever
             # the path components are called in this context)
             return f"{self.webpath}/{parent_url}{url}"
-
 
     def __enter__(self):
         if not os.path.exists(self.target_directory):
@@ -143,7 +142,10 @@ class Storage:
                 self.target_directory,
                 "index.json"
             ), "wb") as f:
-                f.write(msgspec.json.encode(
-                    self.state
-                ))
-
+                f.write(
+                    msgspec.json.format(
+                        msgspec.json.encode(
+                            self.state
+                        )
+                    )
+                )
