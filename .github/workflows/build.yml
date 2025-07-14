@@ -8,6 +8,18 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mia
+          POSTGRES_USER: mia
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -17,6 +29,11 @@ jobs:
         run: |
           pip install -r requirements.txt
           sudo apt install -y xvfb
-      - name: "Run tests"
+      - name: Populate .env.dev
+        run: |
+          echo "POSTGRES_PASSWORD=password" > .env.dev
+          echo "POSTGRES_USER=mia" >> .env.dev
+          echo "POSTGRES_DATABASE=mia" >> .env.dev
+      - name: Run tests
         run: |
           python3 -m pytest
