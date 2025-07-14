@@ -3,6 +3,7 @@ import pytest
 from time import sleep
 from aiohttp.test_utils import TestServer
 from loguru import logger
+from tests.utils import find_first
 
 def test_front_page(server: TestServer, driver: UFF):
     del driver.requests
@@ -10,6 +11,8 @@ def test_front_page(server: TestServer, driver: UFF):
         str(server.make_url("/"))
     )
 
-    assert driver.requests[0].response is not None
-    assert driver.requests[0].response.status_code == 200
+    page_request = find_first(driver, "localhost", server.port)
+
+    assert page_request.response is not None
+    assert page_request.response.status_code == 200
     logger.debug("Done")

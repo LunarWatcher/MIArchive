@@ -1,5 +1,29 @@
 import mia.config
 import msgspec
+from seleniumwire import UndetectedFirefox as UFF
+
+def find_first(driver: UFF, host: str, port: int | None = None):
+    """
+    Utility function for finding the first matching request from a webdriver.
+    Largely exists to deal with random stock shit polluting the requests
+    object, which means none of the access objects are super reliable in
+    testing.
+    """
+    hosts = [host]
+    if host == "localhost":
+        assert port is not None
+
+        hosts = [
+            f"localhost:{port}",
+            f"127.0.0.1:{port}",
+        ]
+
+    for request in driver.requests:
+        if request.host in hosts:
+            return request
+        print(request.host)
+
+    raise RuntimeError("Failed to find request with host=" + host)
 
 def create_config(output: str, cfg: mia.config.Config | None = None):
     env = {}
