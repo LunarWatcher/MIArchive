@@ -12,6 +12,11 @@
     <body>
         <header>
 
+            {% if Meta.Debug == true %}
+                <div class="banner">
+
+                </div>
+            {% endif %}
         </header>
         <main>
             {% block main %}{% endblock %}

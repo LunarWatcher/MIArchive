@@ -8,9 +8,13 @@ import msgspec
 from mia import config
 
 from .middlewares import security_headers
-from .archive import ArchiveController
 from .app_keys import *
+# Only used for types
 import argparse
+
+from .archive import ArchiveController
+from .static import StaticController
+from mia.www.locator import find as find_resource_dir
 
 class ServerConfig(argparse.Namespace):
     debug: bool | None = False
@@ -25,6 +29,7 @@ async def index(request: web.Request):
         "Meta": {
             "Title": "MIArchive",
             "Description": "A small, self-hostable internet archive",
+            "Debug": request.app[DEBUG],
         }
     }
 
@@ -64,13 +69,15 @@ def start(args: ServerConfig, blocking: bool = True):
     app.add_routes(routes)
     ajp.setup(
         app,
-        loader=jinja2.FileSystemLoader('./www')
+        loader=jinja2.FileSystemLoader(find_resource_dir())
     )
 
     cors = aiocors.setup(app)
 
     inject_globals(app)
+    app[DEBUG] = args.debug
     archive = ArchiveController(app)
+    static = StaticController(app)
 
     if blocking:
         web.run_app(

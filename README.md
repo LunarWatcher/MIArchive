@@ -2,12 +2,13 @@
 
 A quick and dirty archival system meant as a replacement for my use of [ArchiveBox](https://github.com/ArchiveBox/ArchiveBox), featuring:
 
-* undetected-geckodriver with ublock by default. Self-hosted archives have been especially vulnerable to aggressive Cloudflare configurations that block anything that maybe perhaps vaguely looks like it could be an AI slop scraper.
+* undetected-geckodriver with uBlock origin by default. Self-hosted archives have been especially vulnerable to aggressive Cloudflare configurations that block anything that maybe perhaps vaguely looks like it could be an AI slop scraper.
 * More of archive.org-like interface, where recapturing sites isn't a second-class activity shoehorned in after the fact.
+* A script sandbox render mode in addition to a script-allowing runtime, for those sites with JS that refuse to work when the JS runs (looking at you, Stack Overflow)
 
-Unlike ArchiveBox, MIArchive is intentionally designed to not store as many formats. Though certain additional downloaders exist, for websites, the goal is to store websites. If you want to download YouTube videos, [there's a perfectly good program for that](https://github.com/yt-dlp/yt-dlp).
+Unlike ArchiveBox, MIArchive is intentionally designed to not store as many formats. Though certain additional downloaders exist, for websites, the goal is to store websites. If you want to download YouTube videos, [there's a perfectly good program for that](https://github.com/yt-dlp/yt-dlp). Certain format conversions may be implemented in the future, but the goal is only to support things that can be derived from the main scan. If it isn't compatible with that goal, it likely isn't compatible with the idea behind MIA.
 
-Also unlike ArchiveBox, MIA is Linux-only, largely to take advantage of some Linux-only features.
+Also unlike ArchiveBox, MIA is Linux-only, largely to take advantage of some Linux-only features. This largely means xvfb, as this allows geckodriver to run with a display without actually requiring a display.
 
 ## Untitled tangent section
 
@@ -75,12 +76,7 @@ bash <(curl -L https://codeberg.org/LunarWatcher/MIArchive/raw/branch/master/scr
 
 If you don't wish to `curl` the script, you can read the script and run the commands manually.
 
-## Features
-
-* uBlock Origin and undetected-geckodriver by default
-* Two different sandbox modes for archived pages, with and without scripts running in the archived page.
-
 [^1]: Yes, this is a pun on Missing In Action and Archival/Archive (Missing In Archive is functionally the canonical full name). Yes, I thought I was funny. Yes, I'm already regretting my decision (mostly, it does at least give nice, shortly typed `mia` commands). Yes, I still think I'm funny several days later, even after needing to fork `selenium-wire-2`.
 [^2]: I'm not saying the others are illegal, but as far as I know, archive.org goes a lot further than many other archives in making sure the content hosted is legal. This unfortunately means archive.org is fairly quick to take down content, which makes it hard to actually preserve the historical record.
-[^3]: [This list](https://radar.cloudflare.com/bots#verified-bots) is absolute bullshit. It includes OpenAI, Google's slop bot, anthropic, and Meta (Facebook), all of whom have questionable relations to respecting requests not steal data, and questionable relations [to basic copyright law](https://arstechnica.com/tech-policy/2025/02/meta-torrented-over-81-7tb-of-pirated-books-to-train-ai-authors-say/)
+[^3]: [This list](https://radar.cloudflare.com/bots#verified-bots) is absolute bullshit. It includes OpenAI, Google's slop bot, anthropic, and Meta (Facebook), all of whom have questionable relations to respecting requests not steal data, and questionable relations [to basic copyright law](https://arstechnica.com/tech-policy/2025/02/meta-torrented-over-81-7tb-of-pirated-books-to-train-ai-authors-say/). No self-respecting list claiming to include legitimate bots should include these.
 [^4]: https://developers.cloudflare.com/bots/concepts/bot/verified-bots/policy/
