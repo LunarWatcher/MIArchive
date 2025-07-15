@@ -8,6 +8,12 @@ def find_first(driver: UFF, host: str, port: int | None = None):
     Largely exists to deal with random stock shit polluting the requests
     object, which means none of the access objects are super reliable in
     testing.
+
+    :param host     The host, or one of a few special keys to automatically
+                    turn the host detection into a list. These keys are:
+                    * "localhost" - matches "localhost:{port}", "127.0.0.1:{port}"
+    :param port     The port to use when using a special host key. Has no
+                    effect for most hosts; append the port to the host instead.
     """
     hosts = [host]
     if host == "localhost":

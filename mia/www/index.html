@@ -3,5 +3,27 @@
 
 <h1>MIArchive</h1>
 
+<form id="web-search" class="flex-vertical" onsubmit="/sear">
+    <div class="flex-horizontal">
+        <input type="url"
+            name="url" placeholder="https://..."
+            pattern="https?://.*"
+            required
+            class="flex-grow"
+        />
+        <button type="submit" class="flex-shrink">Go</button>
+    </div>
+
+    <fieldset>
+        <legend>Action</legend>
+        <div class="flex-horizontal">
+            <input type="radio" id="action-archive" name="action" value="archive" checked />
+            <label for="action-archive">Archive</label>
+
+            <input type="radio" id="action-search" name="action" value="search" />
+            <label for="action-search">Search</label>
+        </div>
+    </fieldset>
+</form>
 
 {% endblock %}

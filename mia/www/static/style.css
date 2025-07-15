@@ -5,3 +5,30 @@
 .banner {
     width: 100%;
 }
+
+.flex-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.flex-horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.flex-grow {
+    flex: 1 1 auto;
+}
+.flex-shrink {
+    flex: 0 1 auto;
+}
+
+input, button {
+    padding: 8px;
+}
+
+#web-search {
+
+}
