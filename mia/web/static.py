@@ -11,7 +11,6 @@ class StaticController:
         resource_dir = str(find_resource_dir())
         assert resource_dir is not None
         assert len(resource_dir) != 0
-        logger.debug(os.path.join(resource_dir, "/static/style.css"))
         app.add_routes([
             web.get(
                 "/static/style.css",
@@ -26,7 +25,7 @@ class StaticController:
             )
         ])
 
-    def load_file(self, path, mimetype, request):
+    async def load_file(self, path, mimetype, _):
         logger.debug("{}: {}", path, mimetype)
         return web.FileResponse(
             path,
