@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(
 )
 
 subs = parser.add_subparsers(
-    required=True
+    required=True,
 )
 
 server = subs.add_parser(
@@ -17,7 +17,7 @@ server = subs.add_parser(
     help="Server-related commands"
 )
 server.add_argument(
-    "-d, --debug",
+    "-d", "--debug",
     help="Whether or not to enable debug mode, which adds some additional "
         "default settings not settable in any other way, as some of these are "
         "fundamentally unsafe.",
@@ -27,7 +27,7 @@ server.add_argument(
     dest="debug",
 )
 server.add_argument(
-    "-h, --headed",
+    "-s", "--headed",
     help="Pass to disable automatically starting xvfb. If you're running headlessly, "
         "this will result in hard failures.",
     required=False,
@@ -42,7 +42,7 @@ archive = subs.add_parser(
     help="Archive stuff from the command line"
 )
 archive.add_argument(
-    "-h, --headed",
+    "-s", "--headed",
     help="Pass to disable automatically starting xvfb. If you're running headlessly, "
         "this will result in hard failures.",
     required=False,
@@ -57,7 +57,7 @@ setup = subs.add_parser(
     help="One-time environment setup of stuff needed to run MIA"
 )
 setup.add_argument(
-    "-d, --developer",
+    "-d", "--developer",
     help="Whether or not to also enable development setup features. You "
         "should only supply this if you plan to develop MIArchive itself, as "
         "some of the setup commands are required for testing to work",

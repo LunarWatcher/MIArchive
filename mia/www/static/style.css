@@ -1,9 +1,49 @@
 :root {
+    --screen-medium: 900px;
+    --screen-small: 500px;
 
+    --colour-primary: #BEB8EB;
+    --colour-primary-dark: #6D63B6;
+    --colour-primary-text: black;
+
+    --colour-secondary: #FFE7BF;
+    --colour-secondary-dark: #FFCC79;
+    --colour-secondary-text: black;
+
+    --colour-error: #ff3333;
+    --colour-error-text: black;
+    --colour-warn: #ffcc00;
+    --colour-warn-text: black;
+    --colour-fine: #339900;
+    --colour-fine-text: black; /* TODO: Check if this has enough contrast */
+
+    --theme-background: var(--colour-primary);
+    --theme-foreground: var(--colour-primary-text);
+
+}
+
+/* Resetter */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    padding: 8px;
 }
 
 .banner {
     width: 100%;
+    padding: 4px;
+}
+
+.banner.error {
+    background-color: var(--colour-error);
+    color: var(--colour-error-text);
+}
+.banner.warning {
+    background-color: var(--colour-warn);
+    color: var(--colour-warn-text);
 }
 
 .flex-vertical {
@@ -29,6 +69,21 @@ input, button {
     padding: 8px;
 }
 
-#web-search {
+fieldset {
+    margin: 0;
+}
 
+#web-search {
+    max-width: 80%;
+    margin: auto;
+}
+
+@media (max-width: var(--screen-medium)) {
+    #web-search {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: var(--screen-small)) {
+    
 }

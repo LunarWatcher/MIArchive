@@ -3,8 +3,10 @@ import msgspec
 import mia.archiver.storage as storage
 from mia.archiver.storage import ArchivedWebsite
 from aiohttp import web
-from .app_keys import CONFIG
+from .app_keys import CONFIG, DEBUG, ARCHIVE_QUEUE
 from loguru import logger
+import aiohttp_jinja2 as ajp
+from mia.archiver.runner import Runner, ArchiveRequest
 
 import os.path
 
@@ -27,42 +29,84 @@ class ArchiveController:
             web.get(
                 "/noscript/web/{timestamp}/{url:.*}",
                 self.get_extra_sandboxed_archived_page
+            ),
+            web.get(
+                "/search",
+                self.get_search
+            ),
+            web.get(
+                "/go",
+                self.get_go,
+            ),
+            web.get(
+                "/archive",
+                self.get_archive
             )
         ])
 
-    def _resolve_relative_urls(self, path, base):
-        # TODO: there must be a library that does this
-        if path.startswith("//"):
-            # TODO: can this even appear in redirects?
-            return "https" + path
-        elif path.startswith("/"):
-            if base.endswith("/"):
-                base = base[:-1]
-            return base + path
-        return path
+    async def get_search(self, request: web.Request):
+        pass
 
-    def _create_redirect(
-        self,
-        request: web.Request,
-        timestamp: str,
-        target_url: str,
-        base_url: str = None
-    ):
-        resolved_url = self._resolve_relative_urls(
-            target_url,
-            base_url
+    async def get_go(self, request: web.Request):
+        """
+        Handles the form request from the 
+        """
+        action = request.query["action"]
+        url = request.query["url"]
+        if action is None or action not in ["search", "archive"]:
+            return web.Response(
+                body="You appear to have manually edited the query. You did a dumb",
+                status=400,
+            )
+
+        if url is None:
+            return web.Response(
+                body="Missing URL",
+                status=400
+            )
+
+        if action == "search":
+            return web.HTTPTemporaryRedirect(
+                # TODO: is this actually safe?
+                "/search?url=" + url
+            )
+        elif action == "archive":
+            return web.HTTPTemporaryRedirect(
+                # TODO: is this actually safe?
+                "/archive?url=" + url
+            )
+        else:
+            raise RuntimeError("You fucked up")
+
+    async def get_archive(self, request: web.Request):
+        # TODO: auth (middleware?)
+
+        url = request.query["url"]
+        if url is None:
+            return web.Response(
+                body="Missing URL to archive",
+                code = 400
+            )
+
+        queue: Runner = request.app[ARCHIVE_QUEUE]
+        pos = queue.archive(ArchiveRequest(
+            url,
+            # TODO: make configurable? This is currently only settable through
+            # the API
+            1,
+        ))
+
+        return ajp.render_template(
+            "archive.html", request, {
+                "Meta": {
+                    "Title": "Archiving in progress",
+                    "Description": "Progress page for the archiver",
+                    "Debug": request.app[DEBUG]
+                },
+                "Position": pos
+            }
         )
-        target_path = str(request.rel_url)
-
-        target_path = target_path[1:].split("/", 1)
-        builder = "/"
-        if target_path[0] == "noscript":
-            builder += "noscript/"
-        builder += f"web/{timestamp}/{resolved_url}"
-
-        return web.HTTPPermanentRedirect(
-            builder
-        )
+        
 
     async def get_archived_page(self, request: web.Request):
         timestamp = request.match_info["timestamp"]
@@ -135,4 +179,38 @@ class ArchiveController:
 
     async def get_extra_sandboxed_archived_page(self, request):
         return await self.get_archived_page(request)
+
+    def _resolve_relative_urls(self, path, base):
+        # TODO: there must be a library that does this
+        if path.startswith("//"):
+            # TODO: can this even appear in redirects?
+            return "https" + path
+        elif path.startswith("/"):
+            if base.endswith("/"):
+                base = base[:-1]
+            return base + path
+        return path
+
+    def _create_redirect(
+        self,
+        request: web.Request,
+        timestamp: str,
+        target_url: str,
+        base_url: str = None
+    ):
+        resolved_url = self._resolve_relative_urls(
+            target_url,
+            base_url
+        )
+        target_path = str(request.rel_url)
+
+        target_path = target_path[1:].split("/", 1)
+        builder = "/"
+        if target_path[0] == "noscript":
+            builder += "noscript/"
+        builder += f"web/{timestamp}/{resolved_url}"
+
+        return web.HTTPPermanentRedirect(
+            builder
+        )
 

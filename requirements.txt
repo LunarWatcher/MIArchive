@@ -1,6 +1,6 @@
 # The shit I do for archival {{{
 undetected-geckodriver-lw
-selenium-wire-lw[uf]
+selenium-wire-lw[uf]>=1.1.1
 # }}}
 
 beautifulsoup4==4.13.3

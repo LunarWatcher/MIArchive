@@ -5,6 +5,8 @@ from urllib import parse
 import seleniumwire.request
 import msgspec
 
+from mia.config import Config
+
 class Entry(msgspec.Struct):
     original_url: str
     # Where the URL redirects to. Only populated if status_code == 3xx

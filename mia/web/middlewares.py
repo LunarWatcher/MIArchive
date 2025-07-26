@@ -52,6 +52,7 @@ async def security_headers(
             "style-src 'self' 'unsafe-inline' blob:; "
             "frame-ancestors 'none'; "
             "frame-src 'self' blob:; "
+            "script-src 'self'; "
         )
         res.headers.merge({
             "X-Frame-Options": "DENY"

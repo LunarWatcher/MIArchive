@@ -60,6 +60,13 @@ def server():
     logger.debug("Server started on port {}", serv.port)
     yield serv
     loop.create_task(serv.close())
+    # Inexplicably  required for Runner to shut down correctly
+    # I would assume these aren't called because we're bypassing the entire
+    # shutdown mechanism, so the async methods stored here aren't called.
+    # Unfortunately. server.py::cleanup() is loadbearing, so they need ot be
+    # called manually
+    for func in inst.on_shutdown:
+        loop.create_task(func(inst))
     loop.stop()
     # This request is inexplicably required for the loop to terminate. It dies
     # as soon as the request is received, but some kind of event has to trigger
@@ -71,7 +78,6 @@ def server():
         # to ignore, because idfk, fuck you I guess
         pass
     t.join()
-
     os.remove(os.environ["MIA_CONFIG_LOCATION"])
 
 @pytest.fixture(scope="function")
