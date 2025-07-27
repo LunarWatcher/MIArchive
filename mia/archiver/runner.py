@@ -11,7 +11,9 @@ class ArchiveRequest:
     # Depth == 1 and depth == 0 are functionally identical
     # Depth == 1 means "Archive this page and everything on it"
     # Depth == 2 means the same as depth == 1, and "also archive everything
-    #   linked from this page"
+    #   linked from this page". Technically, there's no upper limit, but it's a
+    #   combinatorial explosion, so it's hard-capped at 2 to avoid accidentally
+    #   crawling thousands of pages from just one link
     depth: int = 1
 
 class Runner:
