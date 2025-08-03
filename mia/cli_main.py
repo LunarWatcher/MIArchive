@@ -32,8 +32,8 @@ server.add_argument(
     help="Pass to disable automatically starting xvfb. If you're running headlessly, "
         "this will result in hard failures.",
     required=False,
-    default=True,
-    action="store_false",
+    default=False,
+    action="store_true",
     dest="headed"
 )
 server.set_defaults(func = start_server)

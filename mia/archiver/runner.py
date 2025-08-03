@@ -2,6 +2,7 @@ import threading
 import queue
 from dataclasses import dataclass
 from loguru import logger
+from seleniumwire.helpers.cache import WebCache
 from mia.config import Config
 from mia.archiver import WebArchiver
 
@@ -28,6 +29,7 @@ class Runner:
         # Used to manage the `_run` thread. This has nothing to do with
         # self._queue access - it's exclusively used to avoid busy waits
         self._cv = threading.Condition()
+        self.cache = WebCache(True)
 
         self._thread.start()
 
@@ -81,7 +83,8 @@ class Runner:
                 # which means the Archiver needs access to a Runner.
                 # It should probably be optional for reasons.
                 with WebArchiver(
-                    depth = archive_request.depth
+                    depth=archive_request.depth,
+                    cache=self.cache
                 ) as archiver:
                     archiver.archive(
                         archive_request.url

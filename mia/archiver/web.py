@@ -36,9 +36,6 @@ class WebArchiver:
             "text/": self.process_text,
             self.GENERIC_PROCESSING_METHOD: self.process_generic,
         }
-        assert self.d is not None
-        self.d.request_interceptor(self)
-
 
     def _request(self, url: str):
         assert self.d is not None
@@ -64,9 +61,9 @@ class WebArchiver:
         options.enable_downloads = False
         options.set_preference("browser.download.folderList", 2)
 
-        ubo_internal_uuid = f"{uuid4()}"
+        self.ubo_internal_uuid = f"{uuid4()}"
         options.set_preference("extensions.webextensions.uuids",
-            json.dumps({"uBlock0@raymondhill.net": ubo_internal_uuid})
+            json.dumps({"uBlock0@raymondhill.net": self.ubo_internal_uuid})
         )
         self.d = sw.UndetectedFirefox(
             options=options,
@@ -91,19 +88,23 @@ class WebArchiver:
         driver = self.d
         assert driver is not None
 
-        def _dashboard_nav():
+        def _dashboard_nav(driver):
+            logger.info("Updating blocklists")
             # TODO: enable optional, non-regional blocklists by default
             driver.get(
-                f"moz-extension://{self.ubo_id}/dashboard.html#3p-filters.html"
+                f"moz-extension://{self.ubo_internal_uuid}/dashboard.html#3p-filters.html"
             )
-            elem = driver.find_element(By.ID, "buttonUpdate")
-            elem.click()
+            # Just visiting is enough to trigger the update
+            # TODO: wait for it to actually complete rather than using a naive
+            # sleep
+            sleep(10)
+            logger.info("Done")
 
         if self.cache is not None:
             with self.cache.intercept_with(driver):
-                _dashboard_nav()
+                _dashboard_nav(driver)
         else:
-            _dashboard_nav()
+            _dashboard_nav(driver)
 
 
     def text_find_urls(self, archive_url: str, body: bytes):

@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 import os
 import sys
 from aiohttp import web
@@ -84,8 +85,6 @@ def start(args: ServerConfig, blocking: bool = True):
             "level": "INFO"
         }])
 
-
-
     app = web.Application(
         middlewares=[
             security_headers
@@ -120,11 +119,12 @@ def start(args: ServerConfig, blocking: bool = True):
     app.on_shutdown.append(cleanup)
 
     if blocking:
+        logger.debug("Display: {}", args.headed)
         # The display is initialised here to minimise problems with tests.
         # xvfbwrapper changes environment variables to Just Work:tm: with
         # things, but that means having two running in two threads (i.e. one in
         # a test and one in Runner) would cause all kinds of not fun problems
-        with Xvfb() as display:
+        with (Xvfb() if not args.headed else nullcontext()) as display:
             web.run_app(
                 app,
                 port=app[CONFIG].server.port
