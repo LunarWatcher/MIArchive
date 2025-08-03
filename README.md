@@ -10,6 +10,10 @@ Unlike ArchiveBox, MIArchive is intentionally designed to not store as many form
 
 Also unlike ArchiveBox, MIA is Linux-only, largely to take advantage of some Linux-only features. This largely means xvfb, as this allows geckodriver to run with a display without actually requiring a display.
 
+> [!warning]
+>
+> Until v0.1.0, the migrations are not stable and may change, requiring a full database purge to be consistent again.
+
 ## Untitled tangent section
 
 The main target pages for the archiver is relatively simple pages, meaning pages where things load fairly easily. Archiving a full SPA, for example, is never going to be as good as archiving a more conventional website. Large amounts of dynamic content heavily dependent on API requests that aren't called during the page load never works well, at least not with any archives I'm aware of.

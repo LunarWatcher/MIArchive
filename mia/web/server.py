@@ -1,4 +1,5 @@
 import os
+import sys
 from aiohttp import web
 import aiohttp_jinja2 as ajp
 import aiohttp_cors as aiocors
@@ -8,6 +9,7 @@ import msgspec
 from xvfbwrapper import Xvfb
 
 from mia import config
+from mia.archiver.database import ArchiveDB, DBConf
 from mia.archiver.runner import Runner
 
 from .middlewares import security_headers
@@ -62,21 +64,47 @@ async def cleanup(app):
     app[ARCHIVE_QUEUE].stop()
 
 def inject_globals(app):
-    app[CONFIG] = load_config()
     app[ARCHIVE_QUEUE] = Runner(app[CONFIG])
 
 def start(args: ServerConfig, blocking: bool = True):
     if args.debug:
-        logger.level("DEBUG")
+        # TODO: configuring logging levels in loguru is absolute cancer. Might
+        # want to switch to another library that handles it better
+        # TODO: Until then, this needs to be set at every single entry point
+        # for the application where there is a reason to set it. At the time of
+        # writing, only the server has a `--debug` flag.
+        logger.configure(handlers=[{
+            "sink": sys.stdout,
+            "level": "DEBUG"
+        }])
         logger.warning("You're running MIA in debug mode.")
+    else:
+        logger.configure(handlers=[{
+            "sink": sys.stdout,
+            "level": "INFO"
+        }])
+
+
 
     app = web.Application(
         middlewares=[
             security_headers
         ],
     )
+    app[DEBUG] = args.debug or False
+    conf = load_config()
+    app[CONFIG] = conf
+    app[DATABASE] = ArchiveDB(
+        conf.database.database,
+        conf.database.host,
+        conf.database.username,
+        conf.database.password,
+        DBConf(
+            upgrade=True
+        )
+    )
+    # TODO: why do I keep this?
     inject_globals(app)
-    app[DEBUG] = args.debug
 
     app.add_routes(routes)
     ajp.setup(

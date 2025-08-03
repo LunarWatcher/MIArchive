@@ -11,7 +11,7 @@ class Database(msgspec.Struct):
 
     database: str = "mia"
     username: str = "mia"
-    host: str = "localhost:5432"
+    host: str = "localhost"
 
 class Config(msgspec.Struct):
     server: Server

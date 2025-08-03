@@ -1,5 +1,8 @@
+from loguru import logger
 import psycopg
-from .migrations import migrations
+from psycopg.cursor import Cursor
+from .migrations import Migrator
+from dataclasses import dataclass
 
 class ArchiveRecord:
     url: str
@@ -8,8 +11,10 @@ class ArchiveRecord:
 
     type: str = "web"
 
+@dataclass
 class DBConf:
     upgrade: bool = True
+    _allow_unupgraded: bool = False
 
 class ArchiveDB:
     def __init__(self, dbname: str, dbhost: str, dbuser: str, dbpassword: str,
@@ -19,34 +24,27 @@ class ArchiveDB:
         dbuser = self.sanitise(dbuser)
         dbpassword = self.sanitise(dbpassword)
 
-        self.connection_str = (f"dbname='{dbname}' user='{dbuser}'"
+        self.conf = conf
+        self.connection_str = (f"dbname='{dbname}' user='{dbuser}' "
             f"password='{dbpassword}' host='{dbhost}'"
         )
 
         with self.connect() as conn:
             with conn.cursor() as c:
-                c.execute("""
-                CREATE SCHEMA IF NOT EXISTS mia;
-                """)
-                c.execute("""CREATE TABLE IF NOT EXISTS mia.Migration (
-                    Key TEXT PRIMARY KEY,
-                    Version INTEGER PRIMARY KEY
-                )""")
-
-                curr_version = (
-                    c.execute("SELECT Version FROM mia.Migration WHERE Key = '__mia__'")
-                    .fetchall()
-                )
-                version: int = 0 if len(curr_version) == 0 else curr_version[0][0]
-                if version != len(migrations):
+                migrator = Migrator(c)
+                if not migrator.is_updated():
                     if conf.upgrade:
-                        for migration in migrations:
-                            migration.up()
-                    else:
+                        logger.debug("Running upgrade")
+                        migrator.upgrade()
+                    elif not conf._allow_unupgraded:
                         raise RuntimeError(
                             "You appear to be running a new CLI instance "
                             "without updating your server instance. "
                             "Please restart your server and try again"
+                        )
+                    else:
+                        logger.warning(
+                            "Skipping update; database may be inconsistent"
                         )
 
     def sanitise(self, a: str):
@@ -62,4 +60,11 @@ class ArchiveDB:
     def connect(self):
         return psycopg.connect(self.connection_str)
 
+    def _get_migration_version(self, cursor: Cursor):
+        results = cursor.execute(
+            "SELECT Version FROM mia.Migration WHERE Key = '__mia__'"
+        ).fetchall()
+
+        assert len(results) == 1
+        return results[0][0]
 

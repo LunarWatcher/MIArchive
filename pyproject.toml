@@ -19,7 +19,7 @@ license-files = ["LICENSE"]
 dependencies = [
     # Archival
     "undetected-geckodriver-lw",
-    "selenium-wire-lw[uf]",
+    "selenium-wire-lw[uf]>=2.1.0",
 
     # Misc. processing
     "beautifulsoup4==4.13.3",

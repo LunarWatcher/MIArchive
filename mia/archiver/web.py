@@ -1,7 +1,10 @@
 from time import sleep
+from loguru import logger
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 import seleniumwire.webdriver as sw
 import seleniumwire.options as swopt
+from seleniumwire.helpers.cache import WebCache
 from uuid import uuid4
 import json
 from urllib import request
@@ -9,16 +12,12 @@ from os import path
 import bs4
 import requests
 
-import zlib
-import brotli
-
 from .storage import Storage
-
 
 class WebArchiver:
     GENERIC_PROCESSING_METHOD = "__default__"
 
-    def __init__(self, depth: int = 1):
+    def __init__(self, depth: int = 1, cache: WebCache | None = None):
         # TODO: automate updates
         self.ublock_url = "https://github.com/gorhill/uBlock/releases/download/1.63.0/uBlock0_1.63.0.firefox.signed.xpi"
         # TODO: make configurable
@@ -28,12 +27,18 @@ class WebArchiver:
         # with requests made in the background
         # Maybe caching a profile could help?
         self.d: sw.UndetectedFirefox | None = None
+        self.cache = cache
+        if cache is not None:
+            logger.debug("WebArchiver started with WebCache")
 
         self.processing_methods = {
             "text/html": self.process_html,
             "text/": self.process_text,
             self.GENERIC_PROCESSING_METHOD: self.process_generic,
         }
+        assert self.d is not None
+        self.d.request_interceptor(self)
+
 
     def _request(self, url: str):
         assert self.d is not None
@@ -70,13 +75,35 @@ class WebArchiver:
                 request_storage = "memory"
             )
         )
+
+        # TODO: detect when an update is needed. The URL is hardcoded right now
+        # too, which is not good
         if not path.exists("ubo.xpi"):
-            print("Missing uBlock Origin. Downloading now")
+            logger.info("Missing uBlock Origin. Downloading now")
             request.urlretrieve(self.ublock_url, "ubo.xpi")
         else:
-            print("Using cached uBlock Origin")
+            logger.info("Using cached uBlock Origin")
 
         self.ubo_id = self.d.install_addon("ubo.xpi", temporary=True)
+        self._init_ublock()
+
+    def _init_ublock(self):
+        driver = self.d
+        assert driver is not None
+
+        def _dashboard_nav():
+            # TODO: enable optional, non-regional blocklists by default
+            driver.get(
+                f"moz-extension://{self.ubo_id}/dashboard.html#3p-filters.html"
+            )
+            elem = driver.find_element(By.ID, "buttonUpdate")
+            elem.click()
+
+        if self.cache is not None:
+            with self.cache.intercept_with(driver):
+                _dashboard_nav()
+        else:
+            _dashboard_nav()
 
 
     def text_find_urls(self, archive_url: str, body: bytes):
@@ -87,8 +114,6 @@ class WebArchiver:
                 .replace(b"http://",
                          "{}/https://".format(archive_url).encode("utf-8"))
         )
-
-
 
     def _rewrite_attr(self, parent_url: str, soup: bs4.BeautifulSoup, store, attr):
         for tag in soup.select(f"*[{attr}]"):
@@ -149,16 +174,6 @@ class WebArchiver:
 
         return self.processing_methods[self.GENERIC_PROCESSING_METHOD]
 
-    def decode(self, body: bytes, encoding: str | None):
-        if encoding == "gzip":
-            return zlib.decompress(body, wbits = 16+zlib.MAX_WBITS)
-        elif encoding == "br":
-            return brotli.decompress(body)
-        elif encoding is None:
-            return body
-
-        raise RuntimeError("Unhandled compression method: {}".format(encoding))
-
     def archive(self, url: str):
         assert self.d is not None, \
             "You did not run archive in a with block"
@@ -207,10 +222,7 @@ class WebArchiver:
                             request.response.headers.get_content_type()
                         )
 
-                        body = self.decode(
-                            request.response.body,
-                            request.response.headers.get("Content-Encoding")
-                        )
+                        body = request.response.decompress_body()
                         try:
                             processing_method(
                                 request.url,
@@ -222,7 +234,7 @@ class WebArchiver:
                             if e.errno == 36:
                                 # TODO: figure out if there's a way to avoid
                                 # long filenames in the first place
-                                print("Failed to archive {}: body too long"
+                                print("Failed to archive {}: filename too long"
                                     .format(request.url))
                                 continue
                             else:

@@ -2,6 +2,7 @@ import argparse
 from mia.web import start as start_server
 from mia.cli.archive import archive as archive_cli
 from mia.cli.setup import setup_cli
+from mia.cli.migrations import setup_migrations
 
 parser = argparse.ArgumentParser(
     prog="mia",
@@ -67,6 +68,26 @@ setup.add_argument(
     dest="dev_setup"
 )
 setup.set_defaults(func = setup_cli)
+
+migrate = subs.add_parser(
+    "migrate",
+    help="Manage database migrations manually. You probably don't want to do "
+    "this unless you're developing mia, or need to roll back - migration "
+    "upgrades are performed automatically"
+)
+migrate_dir = migrate.add_mutually_exclusive_group(
+    required=True
+)
+migrate_dir.add_argument(
+    "--up", "-u",
+    help="Upgrade the database",
+)
+migrate_dir.add_argument(
+    "--down", "-d",
+    help="Downgrade the database. WARNING: this can result in data loss if "
+    "you downgrade far enough",
+)
+migrate.set_defaults(func=setup_migrations)
 
 def main():
     args = parser.parse_args()

@@ -30,5 +30,11 @@ class M001_Initial(Migration):
         """)
 
     def down(self, cursor: Cursor):
-        cursor.execute("""DROP SCHEMA mia CASACADE;""")
+        # Note that the schema is made prior to the migrations. The first
+        # migration is special and gets away with dropping the schema, because
+        # the schema is always created automagically if it doesn't exist, as a
+        # prerequisite for migrations. It could be argued that this is secretly
+        # a 0th migration, but I'd rather not split it out so I don't have to
+        # commit after every migration.
+        cursor.execute("""DROP SCHEMA mia CASCADE;""")
 
