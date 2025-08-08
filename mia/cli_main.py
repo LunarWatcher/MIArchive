@@ -81,11 +81,22 @@ migrate_dir = migrate.add_mutually_exclusive_group(
 migrate_dir.add_argument(
     "--up", "-u",
     help="Upgrade the database",
+    action="store_true",
+    dest="upgrade"
 )
 migrate_dir.add_argument(
     "--down", "-d",
     help="Downgrade the database. WARNING: this can result in data loss if "
     "you downgrade far enough",
+    action="store_true",
+    dest="downgrade"
+)
+migrate.add_argument(
+    "--to",
+    dest="target_version",
+    default=0,
+    type=int,
+    required=False
 )
 migrate.set_defaults(func=setup_migrations)
 

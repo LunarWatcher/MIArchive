@@ -7,17 +7,27 @@
         <title>{{ Meta.Title }}</title>
         <meta property="description" content="{{ Meta.Description }}" />
 
+        {% for Script in Meta.Scripts %}
+            <script src="{{ Script }}"></script>
+        {% endfor %}
+
         <link rel="stylesheet" href="/static/style.css" />
     </head>
     <body>
-        <header>
-            <!-- I think it makes sense to keep the debug banner over the page nav instead of under -->
-            {% if Meta.Debug == true %}
-                <div class="banner warning flex-vertical">
-                    <span class="flex-center">⚛ Running in debug mode ⚛</span>
-                </div>
-            {% endif %}
+        <!-- I think it makes sense to keep the debug banner over the page nav instead of under -->
+        {% if Meta.Debug == true %}
+            <div class="banner warning flex-vertical">
+                <span class="flex-center">⚛ Running in debug mode ⚛</span>
+            </div>
+        {% endif %}
+        <header class="flex-horizontal shadow">
+            <span class="logo flex-grow"><a href="/">MIA</a></span>
             <nav>
+                {% if Account %}
+                    <button class="inline" title="Open menu">⁝</button>
+                {% else %}
+                    <a href="/auth/login">Log in</a>
+                {% endif %}
             </nav>
         </header>
         <main>

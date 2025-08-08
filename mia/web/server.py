@@ -53,7 +53,9 @@ def load_config() -> config.Config:
     )
     logger.debug("Attempting to load config from {}", config_location)
     if not os.path.exists(config_location):
-        raise RuntimeError("Config not created")
+        raise RuntimeError(
+            "Config not found. Please create it and try again"
+        )
 
     with open(config_location, "r") as f:
         return msgspec.json.decode(

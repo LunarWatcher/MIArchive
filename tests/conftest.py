@@ -69,8 +69,23 @@ def database(config: mia.config.Config):
             cursor.execute("DROP SCHEMA mia CASCADE;")
 
 @pytest.fixture(scope="function")
-def server(database, config):
+def udatabase(database: ArchiveDB):
+    """
+    Shorthand for "Upgraded DATABASE". Same as `database`, but with migrations
+    run as part of the fixture
 
+    This should only be used for database tests that assume the latest
+    migration is in effect
+    """
+    with database.connect() as conn:
+        with conn.cursor() as cursor:
+            migrator = Migrator(cursor)
+            migrator.upgrade()
+
+    yield database
+
+@pytest.fixture(scope="function")
+def server(database, config):
     inst = mia.web.server.start(mia.web.server.ServerConfig(
         debug=True,
         headed=False

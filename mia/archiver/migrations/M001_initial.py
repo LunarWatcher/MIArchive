@@ -23,10 +23,9 @@ class M001_Initial(Migration):
             UserID SERIAL PRIMARY KEY,
             Username TEXT NOT NULL UNIQUE,
             Password TEXT NOT NULL,
+            Salt TEXT NOT NULL,
             Admin BOOLEAN NOT NULL
         );
-        INSERT INTO mia.Users (Username, Password, Admin)
-        VALUES ('admin', 'admin', true);
         """)
 
     def down(self, cursor: Cursor):

@@ -2,9 +2,11 @@
     --screen-medium: 900px;
     --screen-small: 500px;
 
-    --colour-primary: #BEB8EB;
+    --colour-primary: #EFEDFF;
     --colour-primary-dark: #6D63B6;
     --colour-primary-text: black;
+
+    --colour-primary-verydark: #382F79;
 
     --colour-secondary: #FFE7BF;
     --colour-secondary-dark: #FFCC79;
@@ -17,9 +19,6 @@
     --colour-fine: #339900;
     --colour-fine-text: black; /* TODO: Check if this has enough contrast */
 
-    --theme-background: var(--colour-primary);
-    --theme-foreground: var(--colour-primary-text);
-
 }
 
 /* Resetter */
@@ -28,11 +27,23 @@ body {
     padding: 0;
 }
 
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: var(--colour-primary-verydark);
+}
+a:hover {
+    color: var(--colour-primary-dark);
+}
+
 main {
     padding: 8px;
 }
 
 .banner {
+    z-index: 10;
     width: 100%;
     padding: 16px;
 }
@@ -79,6 +90,18 @@ fieldset {
 #web-search {
     max-width: 80%;
     margin: auto;
+}
+
+header {
+    background-color: var(--colour-primary);
+}
+
+header * {
+    padding: 16px;
+}
+
+.shadow {
+    box-shadow: 0px 8px 8px 0px #3b0c3b33
 }
 
 @media (max-width: var(--screen-medium)) {

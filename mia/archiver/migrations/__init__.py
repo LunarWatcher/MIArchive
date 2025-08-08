@@ -43,10 +43,13 @@ class Migrator:
         if self.is_updated():
             logger.info("Already up-to-date")
             return
-        assert target > self.curr_version
+        assert(
+            self.curr_version is None
+            or target > self.curr_version
+        )
 
         for i in range(self.curr_version, target):
-            logger.debug("Upgrading {}", i)
+            logger.debug("Upgrading to v{}", i + 1)
             migrations[i].up(self.cursor)
 
         self._update_version(target)
@@ -58,7 +61,7 @@ class Migrator:
 
         Warning: target is 1-indexed. target == 1 means migrations[0], etc.
         """
-        if self.curr_version <= 0:
+        if self.curr_version is None or self.curr_version <= 0:
             logger.error("Cannot downgrade; already at a blank state")
             return
 
@@ -68,13 +71,15 @@ class Migrator:
         assert target < self.curr_version, "Must be a downgrade"
 
         for i in range(self.curr_version, target, -1):
-            logger.debug("Downgrading {}", i)
+            logger.debug("Downgrading v{}", i)
             migrations[i - 1].down(self.cursor)
 
         if target != 0:
             self._update_version(target)
         else:
-            logger.debug("Database has been wiped; no version written")
+            logger.debug(
+                "Database has been wiped (migration to v0); no version written"
+            )
 
     def _update_version(self, target: int):
         res = self.cursor.execute(
