@@ -57,23 +57,25 @@ def test_migrations(database: ArchiveDB):
 def test_user_creation(udatabase: ArchiveDB):
     with udatabase.connect() as conn:
         with conn.cursor() as cursor:
+            # æøå should force most hash methods to disappear the "æøå"
+            password = "supersecretpasswordæøå"
             # Non-existent users are non-existent
             assert udatabase.get_user(
                 cursor,
                 "potato",
-                "69420"
+                password
             ) is None
 
             assert udatabase.create_user(
                 cursor,
                 "potato",
-                "69420",
+                password,
                 False
             )
             user = udatabase.get_user(
                 cursor,
                 "potato",
-                "69420"
+                password,
             )
             assert user
 
@@ -86,10 +88,15 @@ def test_user_creation(udatabase: ArchiveDB):
             assert not user.is_admin
 
             # Validate that the password was hashed
-            passwd = cursor.execute(
+            theoretically_hashed_password = cursor.execute(
                 "SELECT Password FROM mia.Users WHERE Username = 'potato'"
             ).fetchone()
-            assert passwd is not None, \
+            assert theoretically_hashed_password is not None, \
                 "If this fails, something has likely changed in the user table"
-            assert passwd != "potato", \
+            assert theoretically_hashed_password != password, \
                 "If this fails, the database is not hashing the password"
+            assert "æøå" not in theoretically_hashed_password, \
+                "If this fails, the database is either not hashing the " \
+                "password, or the hash method has changed away from one " \
+                "with a hex representation able to generate at least latin1 " \
+                "in its output"
