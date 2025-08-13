@@ -2,19 +2,13 @@ from datetime import datetime, timezone
 import os
 from urllib import parse
 
+from loguru import logger
 import seleniumwire.request
 import msgspec
 
 from mia.config import Config
-
-class Entry(msgspec.Struct):
-    original_url: str
-    # Where the URL redirects to. Only populated if status_code == 3xx
-    redirect_target: str | None
-    filepath: str
-
-    mime_type: str
-    status_code: int
+from .database import ArchiveDB
+from .dbo import Entry
 
 class ArchivedWebsite(msgspec.Struct):
     # Contains per-page metadata, referring to the source URL
@@ -23,7 +17,17 @@ class ArchivedWebsite(msgspec.Struct):
 
 class Storage:
     def __init__(self, snapshot_dir: str,
+                 database: ArchiveDB,
                  type: str = "web"):
+        """
+        :param snapshot_dir:    The base directory to store snapshots in.
+        :param database:        A database to store extended metadata in,
+                                largely to provide search functionality
+        :param type:            The type of archive. Currently, only "web" is
+                                supported, but the field is kept in case the
+                                type of data stored is expanded in the future
+        """
+        self.database = database
         self.timestamp = self._get_timestamp()
         self.webpath = f"/{type}/{self.timestamp}"
         self.target_directory = f"{snapshot_dir}{self.webpath}"
@@ -107,6 +111,7 @@ class Storage:
             src_code
         )
 
+
     def url_to_archive(self, parent_url: str, url: str):
         if url.startswith(("http://", "https://")):
             # Fully qualified URL; use verbatim
@@ -151,3 +156,15 @@ class Storage:
                         )
                     )
                 )
+            with self.database.connect() as conn:
+                with conn.cursor() as cursor:
+                    logger.debug(
+                        "Committing entries ({}) to database...",
+                        len(self.state.pages)
+                    )
+                    self.database.archive_add(
+                        cursor,
+                        self.timestamp,
+                        [ page for _, page in self.state.pages.items() ]
+                    )
+                    logger.debug("Done")

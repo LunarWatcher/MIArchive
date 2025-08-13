@@ -46,7 +46,7 @@ def create_config(output: str, cfg: mia.config.Config | None = None):
         if cfg is None:
             cfg = mia.config.Config(
                 mia.config.Server(7001),
-                mia.config.Archive("./__test_snapshots/"),
+                mia.config.Archive("./__test_snapshots"),
                 mia.config.Database(
                     # This is left as none to avoid repetition. It's injected
                     # in a sec

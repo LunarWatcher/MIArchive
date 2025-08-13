@@ -12,16 +12,27 @@ from os import path
 import bs4
 import requests
 
+from mia.config import Config
+
 from .storage import Storage
+from .database import ArchiveDB
 
 class WebArchiver:
     GENERIC_PROCESSING_METHOD = "__default__"
 
-    def __init__(self, depth: int = 1, cache: WebCache | None = None):
+    def __init__(
+        self,
+        database: ArchiveDB,
+        conf: Config,
+        depth: int = 1,
+        cache: WebCache | None = None
+    ):
+        assert database is not None
+        self.database = database
         # TODO: automate updates
         self.ublock_url = "https://github.com/gorhill/uBlock/releases/download/1.63.0/uBlock0_1.63.0.firefox.signed.xpi"
         # TODO: make configurable
-        self.output_dir = "./snapshots/"
+        self.output_dir = conf.archive.snapshot_dir
         self.depth = depth
         # TODO: need some way to prevent ublock from polluting the archives
         # with requests made in the background
@@ -173,6 +184,10 @@ class WebArchiver:
         if prefix in self.processing_methods:
             return self.processing_methods[prefix]
 
+        logger.debug(
+            "Received unexpected mimetype {}, using generic processing",
+            mimetype
+        )
         return self.processing_methods[self.GENERIC_PROCESSING_METHOD]
 
     def archive(self, url: str):
@@ -192,9 +207,9 @@ class WebArchiver:
         # ```
 
         # Allow for a few seconds for JS to process before processing the URLs
-        sleep(5)
+        sleep(3)
 
-        with Storage(self.output_dir, "web") as store:
+        with Storage(self.output_dir, self.database, "web") as store:
             for request in self.d.requests:
                 # TODO: This does not work reliably due to rewrites from
                 #   example.com -> example.com/
@@ -211,32 +226,38 @@ class WebArchiver:
                 if (request.response.status_code >= 400):
                     continue
 
-                print(request.url, "returned", request.response.status_code,
-                      "and will be archived.")
+                logger.info(
+                    "{} returned {} and will be archived",
+                    request.url,
+                    request.response.status_code,
+                )
 
                 store.commit_metadata(
                     request
                 )
 
                 if (request.response.status_code < 300):
-                        processing_method = self._resolve_target_key(
-                            request.response.headers.get_content_type()
-                        )
+                    processing_method = self._resolve_target_key(
+                        request.response.headers.get_content_type()
+                    )
 
-                        body = request.response.decompress_body()
-                        try:
-                            processing_method(
-                                request.url,
-                                body,
-                                store
+                    body = request.response.decompress_body()
+                    try:
+                        processing_method(
+                            request.url,
+                            body,
+                            store
+                        )
+                    except OSError as e:
+                        # 36 is filename too long
+                        if e.errno == 36:
+                            # TODO: figure out if there's a way to avoid
+                            # long filenames in the first place
+                            logger.error(
+                                "Failed to archive {}: filename too long",
+                                request.url
                             )
-                        except OSError as e:
-                            # 36 is filename too long
-                            if e.errno == 36:
-                                # TODO: figure out if there's a way to avoid
-                                # long filenames in the first place
-                                print("Failed to archive {}: filename too long"
-                                    .format(request.url))
-                                continue
-                            else:
-                                raise
+                            continue
+                        else:
+                            logger.error(e)
+                            raise

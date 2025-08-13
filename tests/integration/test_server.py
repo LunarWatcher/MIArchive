@@ -23,3 +23,4 @@ def test_server_runs_upgrade(server: TestServer, database: ArchiveDB):
         with conn.cursor() as cursor:
             assert database._get_migration_version(cursor) \
                 == len(migrations)
+

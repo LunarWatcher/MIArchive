@@ -17,4 +17,3 @@ pip3 install miarchive
 
 # Set up environment
 mia setup
-

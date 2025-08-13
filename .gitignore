@@ -3,6 +3,10 @@ snapshots/
 /config.json
 /.env.dev
 
+# Test stuff
+__test_config.json
+__test_snapshots/
+
 # Extensions
 *.xpi
 

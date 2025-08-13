@@ -15,8 +15,7 @@ from mia.archiver.runner import Runner
 
 from .middlewares import security_headers
 from .app_keys import CONFIG, DATABASE, DEBUG, ARCHIVE_QUEUE
-# Only used for types
-import argparse
+import argparse # Only used for types
 
 from .archive import ArchiveController
 from .static import StaticController
@@ -43,7 +42,12 @@ async def index(request: web.Request):
 
 @routes.post("/api/debug/csp-reports")
 async def report_csp_errors(request: web.Request):
-    logger.debug("{}".format(await request.text()))
+    """
+    Used to receive CSP error reports. Noop when not in debug mode, exclusively
+    used for local debug purposes
+    """
+    if request.app[DEBUG]:
+        logger.debug("CSP: {}".format(await request.text()))
     return web.Response()
 
 def load_config() -> config.Config:
@@ -58,16 +62,16 @@ def load_config() -> config.Config:
         )
 
     with open(config_location, "r") as f:
-        return msgspec.json.decode(
+        conf = msgspec.json.decode(
             f.read(),
             type=config.Config
         )
 
+    logger.debug("Snapshot target directory is {}", conf.archive.snapshot_dir)
+    return conf
+
 async def cleanup(app):
     app[ARCHIVE_QUEUE].stop()
-
-def inject_globals(app):
-    app[ARCHIVE_QUEUE] = Runner(app[CONFIG])
 
 def start(args: ServerConfig, blocking: bool = True):
     if args.debug:
@@ -104,8 +108,10 @@ def start(args: ServerConfig, blocking: bool = True):
             upgrade=True
         )
     )
-    # TODO: why do I keep this?
-    inject_globals(app)
+    app[ARCHIVE_QUEUE] = Runner(
+        app[DATABASE],
+        app[CONFIG]
+    )
 
     app.add_routes(routes)
     ajp.setup(

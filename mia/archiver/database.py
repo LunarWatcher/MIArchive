@@ -7,6 +7,7 @@ from .migrations import Migrator
 from dataclasses import dataclass
 from mia.util.auth import hash as pwd_hash_func
 from secrets import token_urlsafe
+from .dbo import Entry
 
 class ArchiveRecord:
     url: str
@@ -122,8 +123,8 @@ class ArchiveDB:
         ).fetchone() is not None:
             return False
 
-        # " As of 2015, it is believed that 32 bytes (256 bits) of randomness 
-        # is sufficient for the typical use-case expected for the secrets 
+        # " As of 2015, it is believed that 32 bytes (256 bits) of randomness
+        # is sufficient for the typical use-case expected for the secrets
         # module." - https://docs.python.org/3/library/secrets.html
         # So double it, because why the fuck not?
         # This is also approximately 83 bytes (64 * 1.3, because token_urlsafe
@@ -139,6 +140,35 @@ class ArchiveDB:
         )
         return True
 
+    def archive_add(
+        self,
+        cursor: Cursor,
+        timestamp,
+        entries: list[Entry]
+    ):
+        """
+        Adds a set of entries to the database.
+        THIS SHOULD ONLY BE CALLED ONCE PER ARCHIVE REQUEST! If you're calling
+        it on every request, you have fucked up.
+        """
+        raw_entries = [
+            [
+                timestamp,
+                entry.original_url,
+                entry.redirect_target,
+                entry.mime_type,
+                entry.status_code
+            ]
+            for entry in entries
+        ]
+        cursor.executemany(
+            """
+            INSERT INTO mia.ArchiveEntries (
+                Timestamp, Url, RedirectURL, MimeType, HttpCode
+            ) VALUES (%s, %s, %s, %s, %s)
+            """,
+            raw_entries
+        )
 
     def connect(self):
         return psycopg.connect(self.connection_str)

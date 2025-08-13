@@ -48,6 +48,10 @@ python3 -m pytest
 
 This will run the entire test suite. To run specific tests or other pytest-related related questions, see pytest's documentation.
 
+> [!warning]
+>
+> Never, ever change POSTGRES_DATABASE in .env.dev to a production database. The tests assume the database you provide it is exclusively used for mia unit tests, and wipes data stored in it as part of the testing.
+
 ## Creating issues and pull requests
 
 For bug reports, questions, feature requests, or similar, use [Codeberg](https://codeberg.org/LunarWatcher/MIArchive/issues). 

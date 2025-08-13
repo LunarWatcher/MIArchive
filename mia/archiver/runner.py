@@ -5,6 +5,7 @@ from loguru import logger
 from seleniumwire.helpers.cache import WebCache
 from mia.config import Config
 from mia.archiver import WebArchiver
+from mia.archiver import ArchiveDB
 
 @dataclass
 class ArchiveRequest:
@@ -18,7 +19,12 @@ class ArchiveRequest:
     depth: int = 1
 
 class Runner:
-    def __init__(self, config: Config):
+    def __init__(
+        self,
+        database: ArchiveDB,
+        config: Config
+    ):
+        self.database = database
         self.config = config
         self.running = True
         self._thread = threading.Thread(
@@ -31,6 +37,7 @@ class Runner:
         self._cv = threading.Condition()
         self.cache = WebCache(True)
 
+        self._callbacks = []
         self._thread.start()
 
     def stop(self):
@@ -47,6 +54,14 @@ class Runner:
 
         return size
 
+    def _callback(self, func):
+        """
+        Register a callback used for certain events on the thread. These
+        functions should only be used for synchronisation in tests, and must
+        not be used outside tests.
+        """
+        self._callbacks.append(func)
+
     def _run(self):
         logger.info("Archival thread started")
         """
@@ -56,6 +71,8 @@ class Runner:
         while self.running:
             if self._queue.empty():
                 with self._cv:
+                    for callback in self._callbacks:
+                        callback({"type": "empty"})
                     self._cv.wait()
 
                 if not self.running:
@@ -79,10 +96,18 @@ class Runner:
                     archive_request.url,
                     archive_request.depth
                 )
+                if archive_request.depth <= 0:
+                    logger.error(
+                        "Depth = 0; skipping. This should not have ended up "
+                        "in the queue"
+                    )
+                    continue
                 # TODO: the plan is to let the Archiver invoke the Runner,
                 # which means the Archiver needs access to a Runner.
                 # It should probably be optional for reasons.
                 with WebArchiver(
+                    database=self.database,
+                    conf=self.config,
                     depth=archive_request.depth,
                     cache=self.cache
                 ) as archiver:

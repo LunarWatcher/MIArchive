@@ -4,6 +4,7 @@ from mia.archiver.database import ArchiveDB
 from pytest import raises
 
 from mia.archiver.migrations import Migrator
+from tests.support.fixture_objects import MockUsers
 
 def test_database_blank_state(database: ArchiveDB):
     """
@@ -78,6 +79,13 @@ def test_user_creation(udatabase: ArchiveDB):
                 password,
             )
             assert user
+            # It should not be possible to create a user that already exists
+            assert udatabase.create_user(
+                cursor,
+                "potato",
+                "alternate password",
+                False
+            ) == False
 
             # Check that the user details match
             assert user.username == "potato"
@@ -100,3 +108,31 @@ def test_user_creation(udatabase: ArchiveDB):
                 "password, or the hash method has changed away from one " \
                 "with a hex representation able to generate at least latin1 " \
                 "in its output"
+
+def test_database_login_logic(udatabase: ArchiveDB, mock_users: MockUsers):
+    with udatabase.connect() as conn:
+        with conn.cursor() as cursor:
+            # Real user, real password
+            assert udatabase.get_user(
+                cursor,
+                mock_users.standard_user.username,
+                mock_users.standard_user.password,
+            ) is not None
+            # Real user, other user's password
+            assert udatabase.get_user(
+                cursor,
+                mock_users.standard_user.username,
+                mock_users.alt_user.password,
+            ) == False
+            # Real user, non-existent password
+            assert udatabase.get_user(
+                cursor,
+                mock_users.standard_user.username,
+                "trash"
+            ) == False
+            # Non-existent user, other user's password
+            assert udatabase.get_user(
+                cursor,
+                "grenade",
+                mock_users.standard_user.password,
+            ) is None

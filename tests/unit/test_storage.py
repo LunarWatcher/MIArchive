@@ -3,6 +3,7 @@ import mia.archiver.storage as storage
 def test_basic_path_management():
     store = storage.Storage(
         "./test_snapshots",
+        None,
         "web"
     )
 
@@ -13,6 +14,7 @@ def test_basic_path_management():
 def test_get_parameter_resolution():
     store = storage.Storage(
         "./test_snapshots",
+        None,
         "web"
     )
 
@@ -35,6 +37,7 @@ def test_get_parameter_resolution():
 def test_forced_truncation():
     store = storage.Storage(
         "./test_snapshots",
+        None,
         "web"
     )
 
@@ -47,6 +50,3 @@ def test_forced_truncation():
         # directory
         + 1
     )
-
-
-

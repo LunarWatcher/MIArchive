@@ -7,6 +7,7 @@ class M001_Initial(Migration):
         CREATE TABLE mia.ArchiveEntries (
             Timestamp TEXT NOT NULL,
             Url TEXT NOT NULL,
+            RedirectURL TEXT,
             MimeType TEXT NOT NULL,
             HttpCode INTEGER NOT NULL,
             PRIMARY KEY(Timestamp, Url)

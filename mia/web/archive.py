@@ -49,7 +49,7 @@ class ArchiveController:
 
     async def get_go(self, request: web.Request):
         """
-        Handles the form request from the 
+        Handles the form request from the front page
         """
         action = request.query["action"]
         url = request.query["url"]
@@ -106,7 +106,6 @@ class ArchiveController:
                 "Position": pos
             }
         )
-        
 
     async def get_archived_page(self, request: web.Request):
         timestamp = request.match_info["timestamp"]
@@ -184,7 +183,7 @@ class ArchiveController:
         # TODO: there must be a library that does this
         if path.startswith("//"):
             # TODO: can this even appear in redirects?
-            return "https" + path
+            return "https:" + path
         elif path.startswith("/"):
             if base.endswith("/"):
                 base = base[:-1]

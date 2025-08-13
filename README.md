@@ -48,6 +48,10 @@ Though MIA will never be able to operate at that scale, it is at least designed 
 
 But there should be more full archives on the list. MIA is my contribution - and I do hope much better alternatives appear eventually.
 
+---
+
+A little over a month after initially writing this, a perfect demonstration of my point appeared; [reddit is now blocking archive.org from accessing reddit](https://www.theverge.com/news/757538/reddit-internet-archive-wayback-machine-block-limit).
+
 ## Implementation technicalities
 
 ### Cloudflare and `robots.txt`

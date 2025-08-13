@@ -1,13 +1,17 @@
 import msgspec
 import pytest
 import os
+import shutil
 from mia.archiver.database import ArchiveDB
+from mia.archiver.dbo.user import UserDBO
 from mia.archiver.migrations import Migrator
 import mia.archiver.database
 import mia.config
 import mia.web.server
 
 from seleniumwire import UndetectedFirefox
+
+from tests.support.fixture_objects import MockUsers
 from .utils import create_config
 from xvfbwrapper import Xvfb
 import asyncio
@@ -41,6 +45,8 @@ def config():
     yield conf
 
     os.remove(os.environ["MIA_CONFIG_LOCATION"])
+    if os.path.exists(conf.archive.snapshot_dir):
+        shutil.rmtree(conf.archive.snapshot_dir)
 
 @pytest.fixture(scope="function")
 def database(config: mia.config.Config):
@@ -141,7 +147,41 @@ def server(database, config):
     t.join()
 
 @pytest.fixture(scope="function")
-def mock_site():
+def mock_users(udatabase: ArchiveDB):
+    """
+    Creates a standard set of users, and returns a list of user credentials.
+    """
+    users = MockUsers(
+        UserDBO("user", "password69", False),
+        UserDBO("user2", "password420", False),
+        UserDBO("admin", "admin", True),
+    )
+    with udatabase.connect() as conn:
+        with conn.cursor() as cursor:
+            for user in users.iter():
+                udatabase.create_user(
+                    cursor,
+                    user.username,
+                    user.password,
+                    user.admin
+                )
+
+    yield users
+
+@pytest.fixture(scope="function")
+def mock_snapshots(udatabase: ArchiveDB, config: mia.config.Config):
+    # TODO: implement
+    # This function needs to:
+    # 1. hard link the directories (?) in mock_snapshots/ to __test_snapshots
+    #   (use the config variable for the path)
+    # 2. Trigger a reindex of the snapshot dir.
+    #
+    # At the time of writing, #2 is impossible, because no reindexing happens.
+    # If this remains the case, step 2 is instead to add the entries to the
+    # database manually.
+    # The JSON file should contain pretty much everything that goes into the
+    # database anyway, as the database is primarily supportive for the search
+    # functionality that also doesn't exist yet at the time of writing
     pass
 
 @pytest.fixture(scope="function")

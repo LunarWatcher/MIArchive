@@ -6,7 +6,7 @@ from mia.archiver.runner import Runner, ArchiveRequest
 from .common import MessageResponse
 
 from mia.config import Config
-from mia.web.app_keys import CONFIG, ARCHIVE_QUEUE
+from mia.web.app_keys import CONFIG, ARCHIVE_QUEUE, DATABASE
 
 class ArchiveURLRequest(msgspec.Struct):
     url: str
@@ -30,27 +30,27 @@ class ArchiveAPIController:
             )
         ])
 
-    def post_archive(self, request: web.Request):
-        config: Config = app[Config]
+    async def post_archive(self, request: web.Request):
+        config: Config = request.app[CONFIG]
         storage.Storage(
             config.archive.snapshot_dir,
+            request.app[DATABASE],
             type="web"
         )
 
         body = msgspec.json.decode(
-            request.text,
+            await request.text(),
             type=ArchiveURLRequest
         )
 
         queue: Runner = request.app[ARCHIVE_QUEUE]
         pos = queue.archive(ArchiveRequest(
             body.url,
-            body.depth,
+            body.depth or 1,
         ))
 
         return web.Response(
-            body=msgspec.json.encode(MessageResponse(
-                "OK",
+            body=msgspec.json.encode(ArchiveURLResponse(
                 pos
             ))
         )
