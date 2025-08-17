@@ -1,27 +1,26 @@
-import msgspec
-import pytest
+import asyncio
 import os
 import shutil
-from mia.archiver.database import ArchiveDB
-from mia.archiver.dbo.user import UserDBO
-from mia.archiver.migrations import Migrator
-import mia.archiver.database
-import mia.config
-import mia.web.server
+from threading import Thread
+from time import sleep
 
-from seleniumwire import UndetectedFirefox
-
-from tests.support.fixture_objects import MockUsers
-from .utils import create_config
-from xvfbwrapper import Xvfb
-import asyncio
 from aiohttp.test_utils import TestServer
 from loguru import logger
-from threading import Thread
-
-from time import sleep
-import asyncio
+import msgspec
+import pytest
 import requests
+from seleniumwire import UndetectedFirefox
+from xvfbwrapper import Xvfb
+
+from mia.archiver.database import ArchiveDB
+import mia.archiver.database
+from mia.archiver.dbo.user import UserDBO
+from mia.archiver.migrations import Migrator
+import mia.config
+import mia.web.server
+from tests.support.fixture_objects import MockUsers
+
+from .utils import create_config
 
 @pytest.fixture(scope="session", autouse=True)
 def init_display():
